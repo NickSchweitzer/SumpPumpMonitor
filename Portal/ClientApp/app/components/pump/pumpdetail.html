@@ -1,0 +1,41 @@
+<template>
+    <h1>Sump Pump Data</h1>
+    <p if.bind="!data"><em>Loading...</em></p>
+
+    <h2>Time Series Charting</h2>
+    <!--
+    <div class="row">
+        <div class="col-md-6">
+            <p>Start Date</p>
+            <abp-datetime-picker value.bind="startDate" />
+        </div>
+        <div class="col-md-6">
+            <p>End Date</p>
+            <abp-datetime-picker value.bind="endDate" />
+        </div>
+    </div>
+    -->
+
+    <chart type="line" style="width: 100%; height: 50%; display: block;" native-options.one-way="timeScaleOptions"
+           should-update="true" throttle="2000" data.one-way="timeScaleData">
+    </chart>
+
+    <h2>Raw Data</h2>
+    <table if.bind="data" class="table">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Water Level (in)</th>
+                <th>Pump Running</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr repeat.for="datapoint of data">
+                <td>${ datapoint.timeStamp | df : { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }}</td>
+                <td>${ datapoint.waterLevel | nf }</td>
+                <td>${ datapoint.pumpRunning }</td>
+            </tr>
+        </tbody>
+    </table>
+
+</template>
