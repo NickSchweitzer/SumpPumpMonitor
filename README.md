@@ -1,11 +1,11 @@
-# SumpPumpMonitor
+# Sump Pump Monitor
 The Sump Pump Monitor project is a combination of IoT Device and 
 Azure Portal that is intended to allow the monitoring of one or many 
 household Sump Pumps.
 
 ## Architectural Components
 ### IoT Sump Pump Monitor
-This is based on the Intel Edison platform, and uses two different
+This is based on the [Intel Edison](https://software.intel.com/en-us/iot/hardware/edison) platform, and uses two different
 sensors in order to monitor the Sump Pump:
 * [eTape Water Level Sensor](https://www.parallax.com/product/29131)
 * [Current Sensor](https://www.sparkfun.com/products/11005) to Monitor On/Off Status and Electrical Usage of the Pump

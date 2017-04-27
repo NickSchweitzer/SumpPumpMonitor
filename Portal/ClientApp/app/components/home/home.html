@@ -9,6 +9,9 @@
                     <p class="list-group-item-text">ID: ${pump.pumpId}</p>
                     <p class="list-group-item-text">Water Level: ${pump.currentWaterLevel} in.</p>
                 </a>
+                <button type="button" class="btn btn-primary" click.trigger="$parent.edit(pump)">
+                    <span class="glyphicon glyphicon-edit"></span> Edit
+                </button>
             </li>
         </ul>
     </div>

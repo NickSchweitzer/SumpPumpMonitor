@@ -1,0 +1,35 @@
+﻿<template>
+    <h1>Edit Sump Pump ${pumpId}</h1>
+    <form>
+        <fieldset>
+            <div class="form-group" validation-errors.bind="sumpPumpNameErrors" class.bind="sumpPumpNameErrors.length ? 'has-error' : ''">
+                <label for="sumpPumpName">Sump Pump Name</label>
+                <input type="text" id="sumpPumpName" class="form-control" placeholder="Sump Pump Name" value.bind="pump.name & validate" />
+                <span class="help-block" repeat.for="errorInfo of sumpPumpNameErrors">
+                    ${errorInfo.error.message}
+                </span>
+            </div>
+            <div class="form-group" validation-errors.bind="maxWaterLevelErrors" class.bind="maxWaterLevelErrors.length ? 'has-error' : ''">
+                <label for="maxWaterLevel">Maximum Water Level</label>
+                <input type="text" id="maxWaterLevel" class="form-control" placeholder="inches" value.bind="pump.maxWaterLevel & validate" />
+                <span class="help-block">Maximum water level (in inches) before an alert is sent.</span>
+                <span class="help-block" repeat.for="errorInfo of maxWaterLevelErrors">
+                    ${errorInfo.error.message}
+                </span>
+            </div>
+            <div class="form-group" validation-errors.bind="maxRunTimeNoChangeErrors" class.bind="maxRunTimeNoChangeErrors.length ? 'has-error' : ''">
+                <label for="maxRunTimeNoChange">Maximum Time of No Water Level Change</label>
+                <input type="text" id="maxRunTimeNoChange" class="form-control" placeholder="seconds" value.bind="pump.maxRunTimeNoChange & validate" />
+                <span class="help-block">Maximum time (in seconds) that the pump will run without the water level changing before
+                an alert is sent.</span>
+                <span class="help-block" repeat.for="errorInfo of maxRunTimeNoChangeErrors">
+                    ${errorInfo.error.message}
+                </span>
+            </div>
+        </fieldset>
+        <button type="button" class="btn btn-primary" click.trigger="save()">
+            <span class="glyphicon glyphicon-floppy-disk"></span> Save
+        </button>
+    </form>
+
+</template>

@@ -51,6 +51,24 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
             return Mapper.Map<DataPointEntity, SumpPump>(currentData, partialPump);
         }
 
+        [HttpPut("{pumpId}")]
+        public async Task<IActionResult> UpdatePump(string pumpId, [FromBody] SumpPump pump)
+        {
+            if (pump == null || pump.PumpId != pumpId)
+                return BadRequest();
+
+            IEnumerable<SumpPumpMetaEntity> entities = await MetaDataRepository.Top(pumpId, 1);
+            var repoPump = entities.FirstOrDefault();
+            if (repoPump == null)
+                return NotFound();
+
+            repoPump.Name = pump.Name;
+            repoPump.MaxWaterLevel = pump.MaxWaterLevel;
+            repoPump.MaxRunTimeNoChange = pump.MaxRunTimeNoChange;
+
+            MetaDataRepository.Upsert(repoPump);
+            return new NoContentResult();
+        }
 
         [HttpGet("[action]/{pumpId}")]
         public async Task<IEnumerable<DataPoint>> Data(string pumpId, DateTime? startDate, DateTime? endDate)

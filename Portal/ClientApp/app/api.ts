@@ -1,20 +1,29 @@
-﻿import { HttpClient } from 'aurelia-fetch-client';
+﻿import { HttpClient, json } from 'aurelia-fetch-client';
 import { inject } from 'aurelia-framework';
 import { DataPoint, SumpPump } from './models';
 
 @inject(HttpClient)
 export class Api {
-    private httpClient: HttpClient;
-    private apiBase: string;
+    private fetchClient: HttpClient;
 
     constructor(http: HttpClient) {
-        this.httpClient = http;
-        this.apiBase = '/api/'
+        this.fetchClient = http;
+        this.fetchClient.configure(config => {
+            config
+                .withBaseUrl('api/')
+                .withDefaults({
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'Fetch'
+                    }
+                });
+        })
     }
 
     getDataPoints(pumpId: string): Promise<DataPoint[]> {
 
-        return this.httpClient.fetch(this.apiBase + 'pumps/data/' + pumpId)
+        return this.fetchClient.fetch('pumps/data/' + pumpId)
             .then(result => result.json() as Promise<DataPoint[]>)
             .then(data => {
                 return data;
@@ -23,7 +32,7 @@ export class Api {
 
     getPumps(): Promise<SumpPump[]> {
 
-        return this.httpClient.fetch(this.apiBase + 'pumps/')
+        return this.fetchClient.fetch('pumps/')
             .then(result => result.json() as Promise<SumpPump[]>)
             .then(data => {
                 return data;
@@ -32,11 +41,19 @@ export class Api {
 
     getPump(pumpId: string): Promise<SumpPump> {
 
-        return this.httpClient.fetch(this.apiBase + "pumps/" + pumpId)
+        return this.fetchClient.fetch('pumps/' + pumpId)
             .then(result => result.json() as Promise<SumpPump>)
             .then(data => {
                 return data;
             });
+    }
+
+    updatePump(pump: SumpPump) {
+        this.fetchClient.fetch('pumps/' + pump.pumpId, {
+                method: 'put',
+                body: json(pump)
+        })
+        .then(response => response.json());
     }
 
 }

@@ -1,6 +1,7 @@
 import { Aurelia } from 'aurelia-framework';
 import { inject } from 'aurelia-framework';
 import { Router, RouterConfiguration } from 'aurelia-router';
+import { ValidationRules } from 'aurelia-validation';
 import { NavMenu } from '../navmenu/navmenu'
 
 @inject(NavMenu)
@@ -9,6 +10,7 @@ export class App {
 
     constructor(navMenu: NavMenu) {
         this.menu = navMenu;
+        this.configureValidations();
     }
 
     configureRouter(config: RouterConfiguration, router: Router) {
@@ -26,7 +28,26 @@ export class App {
             settings: { icon: 'edit' },
             moduleId: '../pump/pumpdetail',
             nav: false,
-            title: 'Pump Detail'
+            title: 'Pump Data'
+        }, {
+            route: 'pump/edit/:id/',
+            name: 'pumpedit',
+            settings: { icon: 'edit' },
+            moduleId: '../pump/pumpedit',
+            nav: false,
+            title: 'Edit Pump'
         }]);
+    }
+
+    configureValidations() {
+        ValidationRules.customRule(
+            'integerRange',
+            (value, obj, min, max) => {
+                var num = Number.parseInt(value);
+                return num === null || num === undefined || (Number.isInteger(num) && num >= min && num <= max);
+            },
+            "${$displayName} must be an integer between ${$config.min} and ${$config.max}.",
+            (min, max) => ({ min, max })
+        );
     }
 }

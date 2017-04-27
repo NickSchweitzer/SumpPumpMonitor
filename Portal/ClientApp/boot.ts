@@ -16,6 +16,7 @@ export function configure(aurelia: Aurelia) {
                 fallbackLng: 'en'
             });
         })
+        .plugin('aurelia-validation')
         .plugin('aurelia-bootstrap-datetimepicker', config => {
             config.options.showTodayButton = true;
         });
