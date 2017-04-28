@@ -10,7 +10,7 @@ require('cylon').robot({
     devices: {
         led: { driver: 'led', pin: 13 },
         button: { driver: 'button', pin: 2, connection: 'edison' },
-        screen: { driver: "upm-jhd1313m1", connection: 'edison' },
+        screen: { driver: "jhd1313m1", connection: 'edison' },
         pressure: { driver: 'analog-sensor', pin: 0, connection: 'edison' }
     },
 
