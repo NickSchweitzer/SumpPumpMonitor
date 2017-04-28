@@ -6,6 +6,7 @@
 # Config Files that contain sensitive information
 *.Release.config
 *.Debug.config
+Edison/config.js
 
 # User-specific files
 *.suo
