@@ -12,6 +12,7 @@
     "aurelia-i18n": "^1.5.1",
     "aurelia-loader-webpack": "^1.0.0",
     "aurelia-logging-console": "^1.0.0",
+    "aurelia-notification": "^1.0.0",
     "aurelia-pal-browser": "^1.0.0",
     "aurelia-polyfills": "^1.0.0",
     "aurelia-route-recognizer": "^1.0.0",

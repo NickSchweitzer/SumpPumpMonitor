@@ -29,25 +29,50 @@ export class PumpDetail {
                         min: this.data[this.data.length - 1].timeStamp
                     }
                 }]
+            },
+            legend: {
+                display: false
             }
         };
     }
 
     @computedFrom('data', 'pump')
     get timeScaleData(): chartjs.LinearChartData {
+
+        let lastPoint: DataPoint;
+        let currentArray = [];
+        let groups = new Array<DataPoint[]>();
+
+        for (var pt of this.data) {
+            if (lastPoint != null && lastPoint.pumpRunning != pt.pumpRunning) {
+                groups.push(currentArray);
+                currentArray = [];
+           }
+            currentArray.push(pt);
+            lastPoint = pt;
+        }
+        groups.push(currentArray);
+
         return {
-            labels: ['Pump Level'],
-            datasets: [
-                {
-                    data: this.data.map(point => {
+            datasets: groups.map(arr => {
+                return {
+                    data: arr.map(point => {
                         return {
                             x: point.timeStamp,
                             y: point.waterLevel
                         };
                     }),
-                    label: this.pump.name
-                }]
+                    borderColor: arr[0].pumpRunning ? 'Green' : 'Red'
+                };
+            })
         };
+    }
+
+    search() {
+        return this.apiClient.getDataPointsByDate(this.pumpId, this.startDate, this.endDate)
+            .then(data => {
+                this.data = data;
+            });
     }
 
     activate(params, routeConfig) {
@@ -56,10 +81,11 @@ export class PumpDetail {
         return this.apiClient.getPump(this.pumpId)
             .then(data => {
                 this.pump = data;
-                this.startDate = this.pump.lastDataRecorded;
                 return this.apiClient.getDataPoints(this.pumpId)
                     .then(data => {
                         this.data = data;
+                        this.endDate = this.data[0].timeStamp;
+                        this.startDate = this.data[this.data.length - 1].timeStamp;
                     });
             });
     }

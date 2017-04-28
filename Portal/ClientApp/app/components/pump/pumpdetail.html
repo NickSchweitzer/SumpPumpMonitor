@@ -15,9 +15,22 @@
         </div>
     </div>
     -->
+    <form class="form-inline">
+        <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input id="startDate" type="text" class="form-control" value.bind="startDate" />
+        </div>
+        <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input id="endDate" type="text" class="form-control" value.bind="endDate" />
+        </div>
+        <button type="button" class="btn btn-primary" click.trigger="search()">
+            <span class="glyphicon glyphicon-search"></span> Search
+        </button>
+    </form>
 
     <chart type="line" style="width: 100%; height: 50%; display: block;" native-options.one-way="timeScaleOptions"
-           should-update="true" throttle="2000" data.one-way="timeScaleData">
+           should-update="true" throttle="100" data.one-way="timeScaleData">
     </chart>
 
     <h2>Raw Data</h2>

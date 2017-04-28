@@ -16,6 +16,16 @@ export function configure(aurelia: Aurelia) {
                 fallbackLng: 'en'
             });
         })
+        .plugin('aurelia-notification', config => {
+            config.configure({
+                translate: false,
+                notifications: {
+                    'success': 'humane-libnotify-success',
+                    'error': 'humane-libnotify-error',
+                    'info': 'humane-libnotify-info'
+                }
+            });
+        })
         .plugin('aurelia-validation')
         .plugin('aurelia-bootstrap-datetimepicker', config => {
             config.options.showTodayButton = true;

@@ -32,6 +32,7 @@ module.exports = {
             'aurelia-templating-binding',
             'aurelia-templating-resources',
             'aurelia-templating-router',
+            'aurelia-notification',
             'eonasdan-bootstrap-datetimepicker',
             'aurelia-bootstrap-datetimepicker',
             'bootstrap',

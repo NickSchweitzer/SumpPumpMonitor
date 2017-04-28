@@ -11,6 +11,7 @@ export class Api {
         this.fetchClient.configure(config => {
             config
                 .withBaseUrl('api/')
+                .rejectErrorResponses()
                 .withDefaults({
                     credentials: 'same-origin',
                     headers: {
@@ -24,6 +25,15 @@ export class Api {
     getDataPoints(pumpId: string): Promise<DataPoint[]> {
 
         return this.fetchClient.fetch('pumps/data/' + pumpId)
+            .then(result => result.json() as Promise<DataPoint[]>)
+            .then(data => {
+                return data;
+            });
+    }
+
+    getDataPointsByDate(pumpId: string, startDate: string, endDate: string): Promise<DataPoint[]> {
+
+        return this.fetchClient.fetch('pumps/data/' + pumpId + '?startDate=' + startDate + '&endDate=' + endDate)
             .then(result => result.json() as Promise<DataPoint[]>)
             .then(data => {
                 return data;
@@ -53,7 +63,7 @@ export class Api {
                 method: 'put',
                 body: json(pump)
         })
-        .then(response => response.json());
+        .then()
     }
 
 }

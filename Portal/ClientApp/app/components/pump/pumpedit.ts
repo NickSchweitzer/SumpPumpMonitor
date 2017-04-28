@@ -2,17 +2,21 @@
 import { inject, NewInstance } from 'aurelia-framework';
 import { ValidationRules, ValidationController } from 'aurelia-validation';
 import { SumpPump } from '../../models';
+import { Notification } from 'aurelia-notification';
+//import "humane-js/themes/libnotify.css!";
 
-@inject(Api, NewInstance.of(ValidationController))
+@inject(Api, NewInstance.of(ValidationController), Notification)
 export class PumpDetail {
     public pumpId: string;
     public pump: SumpPump;
     private apiClient: Api;
     private validation: ValidationController;
+    private notify: Notification;
 
-    constructor(api: Api, validation: ValidationController) {
+    constructor(api: Api, validation: ValidationController, notify: Notification) {
         this.apiClient = api;
         this.validation = validation;
+        this.notify = notify;
     }
 
     activate(params, routeConfig) {
@@ -43,6 +47,7 @@ export class PumpDetail {
             .then(result => {
                 if (result.valid) {
                     this.apiClient.updatePump(this.pump);
+                    //this.notify.info('Sump Pump Details Saved');
                 } else {
 
                 }

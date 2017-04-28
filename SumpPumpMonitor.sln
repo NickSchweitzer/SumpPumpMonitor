@@ -7,11 +7,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emulator", "Emulator\Emulat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebJobs", "WebJobs\WebJobs.csproj", "{16FF3249-72D5-4BF3-8D42-4EE00E88B952}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT", "IoT\IoT.csproj", "{D7C5F6CC-7E4B-49C9-AEFF-EC7EA67F5D14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT", "IoT\IoT.csproj", "{D7C5F6CC-7E4B-49C9-AEFF-EC7EA67F5D14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{2FBCF36E-D103-4023-B625-899E3C7BB85D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Data", "Data\Data.csproj", "{2FBCF36E-D103-4023-B625-899E3C7BB85D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Portal", "Portal\Portal.csproj", "{C91654BF-48C6-418F-81A9-3EA62AE252B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CEE37731-CCB8-43C4-8DDF-25B449AFCB1F}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Edison", "Edison\Edison.njsproj", "{589C6745-B5B7-471A-8202-2290D81F687D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +46,10 @@ Global
 		{C91654BF-48C6-418F-81A9-3EA62AE252B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C91654BF-48C6-418F-81A9-3EA62AE252B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C91654BF-48C6-418F-81A9-3EA62AE252B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{589C6745-B5B7-471A-8202-2290D81F687D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{589C6745-B5B7-471A-8202-2290D81F687D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{589C6745-B5B7-471A-8202-2290D81F687D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{589C6745-B5B7-471A-8202-2290D81F687D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
