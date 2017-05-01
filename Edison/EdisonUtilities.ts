@@ -7,7 +7,7 @@ export function updateScreen(my, line1: string, line2: string, color: string) {
     my.screen.setColor(rgb.R, rgb.G, rgb.B);
     my.screen.setCursor(0, 0);
     my.screen.write(padString(line1, ' ', false));
-    my.screen.setCursor(1, 0);
+    my.screen.setCursor(0, 1);
     my.screen.write(padString(line2, ' ', false));
 }
 
