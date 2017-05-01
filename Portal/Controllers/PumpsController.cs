@@ -2,13 +2,14 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using Moon.OData;
+using System.Threading.Tasks;
+using AutoMapper;
 
 using CodingMonkeyNet.SumpPumpMonitor.Portal.Models;
 using CodingMonkeyNet.SumpPumpMonitor.Data.Entities;
 using CodingMonkeyNet.SumpPumpMonitor.Data.Repositories;
-using System.Threading.Tasks;
-using AutoMapper;
+using CodingMonkeyNet.SumpPumpMonitor.IoT.Messages;
+using CodingMonkeyNet.SumpPumpMonitor.Portal.Services;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
 {
@@ -17,13 +18,16 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
     {
         private readonly ITableRepository<DataPointEntity> DataPointRepository;
         private readonly ITableRepository<SumpPumpMetaEntity> MetaDataRepository;
+        private readonly IIoTHubSender<SumpPumpSettingsMessage> IoTHub;
         private readonly IMapper Mapper;
 
-        public PumpsController(ITableRepository<DataPointEntity> dataPointRepo, ITableRepository<SumpPumpMetaEntity> metaRepo, IMapper mapper)
+        public PumpsController(ITableRepository<DataPointEntity> dataPointRepo, ITableRepository<SumpPumpMetaEntity> metaRepo, IMapper mapper, 
+            IIoTHubSender<SumpPumpSettingsMessage> iotHub)
         {
             DataPointRepository = dataPointRepo;
             MetaDataRepository = metaRepo;
             Mapper = mapper;
+            IoTHub = iotHub;
         }
 
         public async Task<IEnumerable<SumpPump>> Pumps()
@@ -67,6 +71,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
             repoPump.MaxRunTimeNoChange = pump.MaxRunTimeNoChange;
 
             MetaDataRepository.Upsert(repoPump);
+            IoTHub.SendMessage(pumpId, new SumpPumpSettingsMessage
+            {
+                MaxWaterLevel = pump.MaxWaterLevel,
+                MaxRunTimeNoChange = pump.MaxRunTimeNoChange
+            });
             return new NoContentResult();
         }
 

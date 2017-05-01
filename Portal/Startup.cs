@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using AutoMapper;
 
 using CodingMonkeyNet.SumpPumpMonitor.Data.Entities;
 using CodingMonkeyNet.SumpPumpMonitor.Data.Repositories;
-using AutoMapper;
+using CodingMonkeyNet.SumpPumpMonitor.Portal.Services;
+using CodingMonkeyNet.SumpPumpMonitor.IoT.Messages;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Portal
 {
@@ -34,15 +36,21 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal
         public void ConfigureServices(IServiceCollection services)
         {
             string connectionString = Configuration["IoTStorageConnectionString"];
-                        
+            IoTHubConfiguration iotConfig = new IoTHubConfiguration
+            {
+                HostName = Configuration["IoTHubHostName"],
+                SharedAccessKeyName = Configuration["IoTHubSharedAccessKeyName"],
+                SharedAccessKey = Configuration["IoTHubSharedAccessKey"]
+            };
+
             // Add framework services.
             services
-                .AddMvc()
-                .AddOData();
+                .AddMvc();
 
             services.AddAutoMapper();
             services.AddScoped<ITableRepository<DataPointEntity>>(p => new DataPointRepository(connectionString));
             services.AddScoped<ITableRepository<SumpPumpMetaEntity>>(p => new SumpPumpMetaRepository(connectionString));
+            services.AddScoped<IIoTHubSender<SumpPumpSettingsMessage>>(p => new SumpPumpService(iotConfig));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

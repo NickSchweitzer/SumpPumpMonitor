@@ -13,6 +13,7 @@
     <None Remove="ClientApp\app\data\**" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AMQPNetLite.Core" Version="2.0.0-pre" />
     <PackageReference Include="AutoMapper" Version="6.0.2" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
@@ -25,8 +26,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.1.0" />
-    <PackageReference Include="Moon.AspNetCore.OData" Version="3.0.2" />
-    <PackageReference Include="Moon.OData" Version="3.0.2" />
     <PackageReference Include="WindowsAzure.Storage" Version="8.1.1" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Data\Data.csproj" />
+    <ProjectReference Include="..\IoT\IoT.csproj" />
   </ItemGroup>
   <Target Name="RunWebpack" AfterTargets="ComputeFilesToPublish">
     <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->

@@ -15,23 +15,30 @@ using Message = Microsoft.Azure.Devices.Client.Message;
 
 using CodingMonkeyNet.SumpPumpMonitor.IoT.Messages;
 
-
 namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
 {
     [NotifyPropertyChanged]
     public partial class MainWindow : Window
     {
-        private readonly DispatcherTimer timer;
+        private readonly DispatcherTimer waterLevelTimer;
+        private readonly DispatcherTimer receiveMessageTimer;
         private readonly string DeviceId;
-        private Device IoTDevice;
+        private DeviceClient iotClient;
         private const Microsoft.Azure.Devices.Client.TransportType ClientTransportType = Microsoft.Azure.Devices.Client.TransportType.Amqp;
 
         public MainWindow()
         {
             DeviceId = GetDeviceId();
-            timer = new DispatcherTimer();
-            timer.Tick += Timer_Tick;
-            timer.Interval = new TimeSpan(0, 0, 1); // Every second
+
+            // When the emulator is started via the command button, this timer controls the sending of messages to Azure IoT Hub
+            waterLevelTimer = new DispatcherTimer();
+            waterLevelTimer.Tick += waterLevelTimer_Tick;
+            waterLevelTimer.Interval = new TimeSpan(0, 0, 1);           // Every second
+
+            // As soon as the emulator program starts, we connect to IoT hub to receive any messages from Azure IoT Hub
+            receiveMessageTimer = new DispatcherTimer();
+            receiveMessageTimer.Tick += receiveMessageTimer_Tick;
+            receiveMessageTimer.Interval = new TimeSpan(0, 0, 10);      // Every 10 seconds
 
             ToggleEmulatorCommand = new DelegateCommand<string>(ToggleEmulator, CanStartEmulator);
 
@@ -41,20 +48,35 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
             FillTime = 5 * 60;  // 5 min
             DutyCycle = 10;     // 10 seconds
 
-            MinWaterLevel = 1;  // 1 inch
-            MaxWaterLevel = 10; // 10 inches
+            TurnPumpOffLevel = 1;  // 1 inch
+            TurnPumpOnLevel = 10; // 10 inches
             EmulatorAction = "Start Emulator";
         }
 
-        private async void Timer_Tick(object sender, EventArgs e)
+        protected async override void OnInitialized(EventArgs e)
+        {
+            await RegisterEmulator();
+            receiveMessageTimer.Start();
+            base.OnInitialized(e);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            receiveMessageTimer.Stop();
+            waterLevelTimer.Stop();
+            iotClient.Dispose();
+            base.OnClosed(e);
+        }
+
+        private async void waterLevelTimer_Tick(object sender, EventArgs e)
         {
             if (PumpStatus) // Pump Running - Emptying
             {
-                double decrementAmount = (double)(MaxWaterLevel - MinWaterLevel) / DutyCycle;
+                double decrementAmount = (double)(TurnPumpOnLevel - TurnPumpOffLevel) / DutyCycle;
                 double waterLevel = CurrentWaterLevel - decrementAmount;
-                if (waterLevel <= MinWaterLevel)
+                if (waterLevel <= TurnPumpOffLevel)
                 {
-                    CurrentWaterLevel = MinWaterLevel;
+                    CurrentWaterLevel = TurnPumpOffLevel;
                     PumpStatus = false;
                 }
                 else
@@ -62,11 +84,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
             }
             else            // Pump Stopped - Filling
             {
-                double incrementAmount = (double)(MaxWaterLevel - MinWaterLevel) / FillTime;
+                double incrementAmount = (double)(TurnPumpOnLevel - TurnPumpOffLevel) / FillTime;
                 double waterLevel = CurrentWaterLevel + incrementAmount;
-                if (waterLevel >= MaxWaterLevel)
+                if (waterLevel >= TurnPumpOnLevel)
                 {
-                    CurrentWaterLevel = MaxWaterLevel;
+                    CurrentWaterLevel = TurnPumpOnLevel;
                     PumpStatus = true;
                 }
                 else
@@ -87,56 +109,61 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
 
         private async Task RegisterEmulator()
         {
-            string iotHubConnectionString = GetConnectionString();
+            string hostName = ConfigurationManager.AppSettings["HostName"];
+            string sharedAccessKeyName = ConfigurationManager.AppSettings["SharedAccessKeyName"];
+            string sharedAccessKey = ConfigurationManager.AppSettings["SharedAccessKey"];
+            string iotHubConnectionString = string.Format("HostName={0};SharedAccessKeyName={1};SharedAccessKey={2}", hostName, sharedAccessKeyName, sharedAccessKey);
+
             if (string.IsNullOrEmpty(iotHubConnectionString) || string.IsNullOrEmpty(DeviceId))
                 return; // Shouldn't happen - figure out what to do here
 
             using (var manager = RegistryManager.CreateFromConnectionString(iotHubConnectionString))
             {
-                IoTDevice = await manager.GetDeviceAsync(DeviceId);
-                if (IoTDevice == null)
-                    IoTDevice = await manager.AddDeviceAsync(new Device(DeviceId));
+                var iotDevice = await manager.GetDeviceAsync(DeviceId);
+                if (iotDevice == null)
+                    iotDevice = await manager.AddDeviceAsync(new Device(DeviceId));
+
+                iotClient = DeviceClient.Create(hostName,
+                    new DeviceAuthenticationWithRegistrySymmetricKey(DeviceId, iotDevice.Authentication.SymmetricKey.PrimaryKey),
+                    ClientTransportType);
+            }
+        }
+
+        private async void receiveMessageTimer_Tick(object sender, EventArgs e)
+        {
+            Message receivedMessage = await iotClient.ReceiveAsync();
+            if (receivedMessage != null)
+            {
+                SumpPumpSettingsMessage sumpPumpMsg = JsonConvert.DeserializeObject<SumpPumpSettingsMessage>(Encoding.ASCII.GetString(receivedMessage.GetBytes()));
+                MaxWaterLevel = sumpPumpMsg.MaxWaterLevel;
+                await iotClient.CompleteAsync(receivedMessage);
             }
         }
 
         private async Task SendDataPoint()
         {
-            string hostName = ConfigurationManager.AppSettings["HostName"];
-            using (var client = DeviceClient.Create(
-                hostName,
-                new DeviceAuthenticationWithRegistrySymmetricKey(DeviceId, IoTDevice.Authentication.SymmetricKey.PrimaryKey),
-                ClientTransportType))
+            var payload = new DataPointPayload
             {
-                var payload = new DataPointPayload
-                {
-                    DeviceId = DeviceId,
-                    Timestamp = DateTime.Now,
-                    WaterLevel = CurrentWaterLevel,
-                    PumpRunning = PumpStatus
-                };
+                DeviceId = DeviceId,
+                Timestamp = DateTime.Now,
+                WaterLevel = CurrentWaterLevel,
+                PumpRunning = PumpStatus
+            };
 
-                var json = JsonConvert.SerializeObject(payload);
-                using (var message = new Message(Encoding.UTF8.GetBytes(json)))
-                {
-                    message.Properties.Add("DeviceName", DeviceId);
-                    await client.SendEventAsync(message);
-                }
+            var json = JsonConvert.SerializeObject(payload);
+            using (var message = new Message(Encoding.UTF8.GetBytes(json)))
+            {
+                message.Properties.Add("DeviceName", DeviceId);
+                await iotClient.SendEventAsync(message);
             }
-        }
-
-        private string GetConnectionString()
-        {
-            string hostName = ConfigurationManager.AppSettings["HostName"];
-            string sharedAccessKeyName = ConfigurationManager.AppSettings["SharedAccessKeyName"];
-            string sharedAccessKey = ConfigurationManager.AppSettings["SharedAccessKey"];
-            return string.Format("HostName={0};SharedAccessKeyName={1};SharedAccessKey={2}", hostName, sharedAccessKeyName, sharedAccessKey);
         }
 
         public int FillTime { get; set; }   // Seconds to fill
         public int DutyCycle { get; set; }  // Seconds to empty
 
-        public int MinWaterLevel { get; set; }  // Inches
-        public int MaxWaterLevel { get; set; }  // Inches
+        public int TurnPumpOffLevel { get; set; }   // Inches - Simulates when the pump should turn off
+        public int TurnPumpOnLevel { get; set; }    // Inches - Simulates when the pump should turn on
+        public double MaxWaterLevel { get; set; }      // Inches - When should the system send an alert?
 
         public double CurrentWaterLevel { get; set; }    // Inches
         public bool PumpStatus { get; set; }
@@ -152,21 +179,21 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
 
         public async void ToggleEmulator(string value)
         {
-            if (IoTDevice == null)
+            if (iotClient == null)
                 await RegisterEmulator();
 
-            if (IoTDevice != null)
+            if (iotClient != null)
             {
-                if (timer.IsEnabled)
+                if (waterLevelTimer.IsEnabled)
                 {
                     EmulatorAction = "Start Emulator";
-                    timer.Stop();
+                    waterLevelTimer.Stop();
                 }
                 else
                 {
                     EmulatorAction = "Stop Emulator";
                     CurrentWaterLevel = 0;
-                    timer.Start();
+                    waterLevelTimer.Start();
                 }
             }
         }   

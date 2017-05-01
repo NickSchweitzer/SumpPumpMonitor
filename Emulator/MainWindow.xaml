@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CodingMonkeyNet.SumpPumpMonitor.Emulator"
         mc:Ignorable="d"
-        Title="Sump Pump Emulator" Height="262.787" Width="307.124">
+        Title="Sump Pump Emulator" Height="269.941" Width="307.124">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -14,7 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto"/>
-            <RowDefinition />
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Column="0" Grid.Row ="0" Margin="2">
             <Label>Fill Time (Seconds):</Label>
@@ -23,9 +23,11 @@
             <TextBox Name="txtDutyCycle" Text="{Binding Path=DutyCycle}" />
         </StackPanel>
         <StackPanel Grid.Column="1" Grid.Row="0" Margin="2">
-            <Label>Min Water Level (in.):</Label>
-            <TextBox Name="txtMinWaterLevel" Text="{Binding Path=MinWaterLevel}" />
-            <Label>Max Water Level (in.):</Label>
+            <Label>Turn Pump Off (in.):</Label>
+            <TextBox Name="txtPumpOffLevel" Text="{Binding Path=TurnPumpOffLevel}" />
+            <Label>Turn Pump On (in.):</Label>
+            <TextBox Name="txtPumpOnLevel" Text="{Binding Path=TurnPumpOnLevel}" />
+            <Label>Alert Max Level (in.):</Label>
             <TextBox Name="txtMaxWaterLevel" Text="{Binding Path=MaxWaterLevel}" />
         </StackPanel>
         <Button Name="cmdEmulatorStatus" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="20" Width="100"
