@@ -11,7 +11,7 @@ using System.Net;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Services
 {
-    public class SumpPumpService : IIoTHubSender<SumpPumpSettingsMessage>
+    public class SumpPumpService : IIoTHubSender<SumpPumpSettings>
     {
         private const int Port = 5671;
         private static readonly long UtcReference = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).Ticks;
@@ -22,7 +22,7 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Services
             Configuration = config;
         }
 
-        public void SendMessage(string deviceId, SumpPumpSettingsMessage message)
+        public void SendMessage(string deviceId, SumpPumpSettings message)
         {
             Address address = new Address(Configuration.HostName, Port, null, null);
             Connection connection = new Connection(address);

@@ -14,6 +14,7 @@ using Microsoft.Azure.Devices.Client;
 using Message = Microsoft.Azure.Devices.Client.Message;
 
 using CodingMonkeyNet.SumpPumpMonitor.IoT.Messages;
+using Microsoft.Azure.Devices.Shared;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
 {
@@ -21,10 +22,9 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
     public partial class MainWindow : Window
     {
         private readonly DispatcherTimer waterLevelTimer;
-        private readonly DispatcherTimer receiveMessageTimer;
         private readonly string DeviceId;
         private DeviceClient iotClient;
-        private const Microsoft.Azure.Devices.Client.TransportType ClientTransportType = Microsoft.Azure.Devices.Client.TransportType.Amqp;
+        private const Microsoft.Azure.Devices.Client.TransportType ClientTransportType = Microsoft.Azure.Devices.Client.TransportType.Mqtt;
 
         public MainWindow()
         {
@@ -34,11 +34,6 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
             waterLevelTimer = new DispatcherTimer();
             waterLevelTimer.Tick += waterLevelTimer_Tick;
             waterLevelTimer.Interval = new TimeSpan(0, 0, 1);           // Every second
-
-            // As soon as the emulator program starts, we connect to IoT hub to receive any messages from Azure IoT Hub
-            receiveMessageTimer = new DispatcherTimer();
-            receiveMessageTimer.Tick += receiveMessageTimer_Tick;
-            receiveMessageTimer.Interval = new TimeSpan(0, 0, 10);      // Every 10 seconds
 
             ToggleEmulatorCommand = new DelegateCommand<string>(ToggleEmulator, CanStartEmulator);
 
@@ -56,13 +51,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
         protected async override void OnInitialized(EventArgs e)
         {
             await RegisterEmulator();
-            receiveMessageTimer.Start();
             base.OnInitialized(e);
         }
 
         protected override void OnClosed(EventArgs e)
         {
-            receiveMessageTimer.Stop();
             waterLevelTimer.Stop();
             iotClient.Dispose();
             base.OnClosed(e);
@@ -126,18 +119,30 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
                 iotClient = DeviceClient.Create(hostName,
                     new DeviceAuthenticationWithRegistrySymmetricKey(DeviceId, iotDevice.Authentication.SymmetricKey.PrimaryKey),
                     ClientTransportType);
+
+                await iotClient.OpenAsync();
+                await GetInitialConfiguration();
+                await iotClient.SetDesiredPropertyUpdateCallback(OnDesiredPropertyChanged, null);
             }
         }
 
-        private async void receiveMessageTimer_Tick(object sender, EventArgs e)
+        private async Task GetInitialConfiguration()
         {
-            Message receivedMessage = await iotClient.ReceiveAsync();
-            if (receivedMessage != null)
-            {
-                SumpPumpSettingsMessage sumpPumpMsg = JsonConvert.DeserializeObject<SumpPumpSettingsMessage>(Encoding.ASCII.GetString(receivedMessage.GetBytes()));
-                MaxWaterLevel = sumpPumpMsg.MaxWaterLevel;
-                await iotClient.CompleteAsync(receivedMessage);
-            }
+            var twin = await iotClient.GetTwinAsync();
+            var properties = JsonConvert.DeserializeObject<SumpPumpSettings>(twin.Properties.Desired.ToString());
+            DeviceName = properties.DeviceName;
+            MaxWaterLevel = properties.MaxWaterLevel;
+        }
+
+        private Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
+        {
+            MessageBox.Show(string.Format("Desired property change:\n{0}", desiredProperties));
+            return Task.Delay(1);
+            //Console.WriteLine("Sending current time as reported property");
+            //TwinCollection reportedProperties = new TwinCollection();
+            //reportedProperties["DateTimeLastDesiredPropertyChangeReceived"] = DateTime.Now;
+
+            //await Client.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         private async Task SendDataPoint()
@@ -158,6 +163,7 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
             }
         }
 
+        public string DeviceName { get; set; }
         public int FillTime { get; set; }   // Seconds to fill
         public int DutyCycle { get; set; }  // Seconds to empty
 

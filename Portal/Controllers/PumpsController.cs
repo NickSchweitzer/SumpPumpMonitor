@@ -18,11 +18,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
     {
         private readonly ITableRepository<DataPointEntity> DataPointRepository;
         private readonly ITableRepository<SumpPumpMetaEntity> MetaDataRepository;
-        private readonly IIoTHubSender<SumpPumpSettingsMessage> IoTHub;
+        private readonly IIoTHubSender<SumpPumpSettings> IoTHub;
         private readonly IMapper Mapper;
 
         public PumpsController(ITableRepository<DataPointEntity> dataPointRepo, ITableRepository<SumpPumpMetaEntity> metaRepo, IMapper mapper, 
-            IIoTHubSender<SumpPumpSettingsMessage> iotHub)
+            IIoTHubSender<SumpPumpSettings> iotHub)
         {
             DataPointRepository = dataPointRepo;
             MetaDataRepository = metaRepo;
@@ -71,7 +71,7 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
             repoPump.MaxRunTimeNoChange = pump.MaxRunTimeNoChange;
 
             MetaDataRepository.Upsert(repoPump);
-            IoTHub.SendMessage(pumpId, new SumpPumpSettingsMessage
+            IoTHub.SendMessage(pumpId, new SumpPumpSettings
             {
                 MaxWaterLevel = pump.MaxWaterLevel,
                 MaxRunTimeNoChange = pump.MaxRunTimeNoChange

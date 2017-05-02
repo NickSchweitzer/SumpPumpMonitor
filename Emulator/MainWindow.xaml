@@ -17,12 +17,14 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Column="0" Grid.Row ="0" Margin="2">
+            <Label>Name:</Label>
             <Label>Fill Time (Seconds):</Label>
             <TextBox Name="txtFillTime" Text="{Binding Path=FillTime}" />
             <Label>Duty Cycle (Seconds):</Label>
             <TextBox Name="txtDutyCycle" Text="{Binding Path=DutyCycle}" />
         </StackPanel>
         <StackPanel Grid.Column="1" Grid.Row="0" Margin="2">
+            <Label Content="{Binding Path=DeviceName}" />
             <Label>Turn Pump Off (in.):</Label>
             <TextBox Name="txtPumpOffLevel" Text="{Binding Path=TurnPumpOffLevel}" />
             <Label>Turn Pump On (in.):</Label>
