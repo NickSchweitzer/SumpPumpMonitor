@@ -7,10 +7,13 @@
     "name": "NickSchweitzer"
   },
   "dependencies": {
+    "azure-iot-device": "1.1.10",
+    "azure-iot-device-mqtt": "1.1.10",
     "cylon": "^1.3.0",
     "cylon-gpio": "^0.30.1",
     "cylon-i2c": "^0.26.1",
-    "cylon-intel-iot": "^0.13.3"
+    "cylon-intel-iot": "^0.13.3",
+    "macaddress": "^0.2.8"
   },
   "devDependencies": {
     "gulp": "^3.9.1",

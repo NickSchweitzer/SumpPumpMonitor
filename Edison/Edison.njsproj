@@ -62,7 +62,7 @@
     <Folder Include="Scripts\typings\node\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="config.js">
+    <Compile Include="config.json">
       <Publish>False</Publish>
     </Compile>
     <Compile Include="gulpfile.js">

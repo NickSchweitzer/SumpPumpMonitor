@@ -1,8 +1,14 @@
 ﻿var Edison = require('./EdisonUtilities');
+var SumpPump = require('./SumpPump');
+const IoTClient = require('azure-iot-device');
+const ConnectionString = require('azure-iot-device').ConnectionString;
+const Message = require('azure-iot-device').Message;
+const Protocol = require('azure-iot-device-mqtt').Mqtt;
+const macAddress = require('macaddress');
 
-var AD_RESOLUTION = 1023;
-var SYSTEM_VOLTAGE = 5.0;
-var PULL_UP_RESISTOR = 10000.0;
+const AD_RESOLUTION = 1023;
+const SYSTEM_VOLTAGE = 5.0;
+const PULL_UP_RESISTOR = 10000.0;
 
 console.log('hi');
 require('cylon').robot({
@@ -18,6 +24,10 @@ require('cylon').robot({
         var that = this;
         var adConvert = new Edison.AtoDConverter(AD_RESOLUTION, SYSTEM_VOLTAGE);
         var pressureVoltage = 0;
+
+        //setTimeout(function () {
+            var pump = new SumpPump.SumpPump();
+        //}, 30000);
 
         every((0.1).second(), function () {
             my.led.toggle();

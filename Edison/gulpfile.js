@@ -1,7 +1,7 @@
 /// <binding BeforeBuild='' AfterBuild='post-build-copy, kill-processes, deploy, restore-packages' />
 "use strict";
 var gulp = require('gulp');
-var config = require('./config');
+var config = require('./config.json');
 var Client = require('ssh2').Client;
 var conn;
 // JS hint task
@@ -16,7 +16,7 @@ var conn;
 // deploy to the device
 // NOTE: this will only deploy files at the root project level; it is not recursive
 gulp.task('post-build-copy', function () {
-    return gulp.src(['app.js', 'package.json'])
+    return gulp.src(['app.js', '*.json'])
         .pipe(gulp.dest('bin'));
 });
 
