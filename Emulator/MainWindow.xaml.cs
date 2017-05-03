@@ -26,6 +26,7 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
         private readonly DispatcherTimer waterLevelTimer;
         private readonly string DeviceId;
         private DeviceClient iotClient;
+        private SumpPumpSettings settings = new SumpPumpSettings();
         private const Microsoft.Azure.Devices.Client.TransportType ClientTransportType = Microsoft.Azure.Devices.Client.TransportType.Mqtt;
 
         public MainWindow()
@@ -136,33 +137,43 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
             if (File.Exists(ConfigFile))
                 fileSettings = JsonConvert.DeserializeObject<SumpPumpSettings>(File.ReadAllText(ConfigFile));
 
+            // Now grab the device twin settings
             var twin = await iotClient.GetTwinAsync();
             if (twin != null)
                 twinSettings = JsonConvert.DeserializeObject<SumpPumpSettings>(twin.Properties.Desired.ToString());
 
-            var settings = twinSettings ?? fileSettings;
-            DeviceName = settings.DeviceName;
-            MaxWaterLevel = settings.MaxWaterLevel;
+            // Take the best version of the settings
+            if (twinSettings != null)
+                settings = twinSettings;
+            else if (fileSettings != null)
+                settings = fileSettings;
 
+            // Report back to the device twin that we took the new settings
             if (twinSettings != null)
                 await SaveSettings(fileSettings, twinSettings);
         }
 
-        private Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
+        private async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
         {
-            MessageBox.Show(string.Format("Desired property change:\n{0}", desiredProperties));
-            return Task.Delay(1);
-            //Console.WriteLine("Sending current time as reported property");
-            //TwinCollection reportedProperties = new TwinCollection();
-            //reportedProperties["DateTimeLastDesiredPropertyChangeReceived"] = DateTime.Now;
+            string jsonPatch = desiredProperties.ToJson();
+            JsonSerializer ser = new JsonSerializer();
+            using (var reader = new StringReader(jsonPatch))
+            {
+                ser.Populate(reader, settings);
+            }
 
-            //await Client.UpdateReportedPropertiesAsync(reportedProperties);
+            NotifyPropertyChangedServices.SignalPropertyChanged(this, "DeviceName");
+            NotifyPropertyChangedServices.SignalPropertyChanged(this, "MaxWaterLevel");
+
+            // Sending null for currentSettings will force a save and update of Device Twin
+            await SaveSettings(null, settings);
         }
 
         private async Task SaveSettings(SumpPumpSettings currentSettings, SumpPumpSettings newSettings)
         {
             if (currentSettings == null || currentSettings.DeviceName != newSettings.DeviceName || currentSettings.MaxWaterLevel != newSettings.MaxWaterLevel)
             {
+                // Save settings to a file
                 string newSettingsJson = JsonConvert.SerializeObject(newSettings);
                 using (var writer = File.CreateText(ConfigFile))
                 {
@@ -170,6 +181,8 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
                     writer.Flush();
                     writer.Close();
                 }
+
+                // Tell Azure we took their settings
                 await iotClient.UpdateReportedPropertiesAsync(JsonConvert.DeserializeObject<TwinCollection>(newSettingsJson));
             }
         }
@@ -192,13 +205,23 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
             }
         }
 
-        public string DeviceName { get; set; }
+        public string DeviceName
+        {
+            get { return settings.DeviceName; }
+            set { settings.DeviceName = value; }
+        }
+
+        public double MaxWaterLevel                 // Inches - When should the system send an alert?
+        {
+            get { return settings.MaxWaterLevel; }
+            set { settings.MaxWaterLevel = value; }
+        }      
+
         public int FillTime { get; set; }   // Seconds to fill
         public int DutyCycle { get; set; }  // Seconds to empty
 
         public int TurnPumpOffLevel { get; set; }   // Inches - Simulates when the pump should turn off
         public int TurnPumpOnLevel { get; set; }    // Inches - Simulates when the pump should turn on
-        public double MaxWaterLevel { get; set; }      // Inches - When should the system send an alert?
 
         public double CurrentWaterLevel { get; set; }    // Inches
         public bool PumpStatus { get; set; }
