@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CodingMonkeyNet.SumpPumpMonitor.Emulator"
         mc:Ignorable="d"
-        Title="Sump Pump Emulator" Height="269.941" Width="307.124">
+        Title="Sump Pump Emulator" Height="336.079" Width="307.124">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Column="0" Grid.Row ="0" Margin="2">
-            <Label>Name:</Label>
+            <Label HorizontalAlignment="Right">Name:</Label>
             <Label>Fill Time (Seconds):</Label>
             <TextBox Name="txtFillTime" Text="{Binding Path=FillTime}" />
             <Label>Duty Cycle (Seconds):</Label>

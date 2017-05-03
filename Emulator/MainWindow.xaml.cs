@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Linq;
 using System.Windows;
@@ -21,6 +22,7 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
     [NotifyPropertyChanged]
     public partial class MainWindow : Window
     {
+        private const string ConfigFile = "config.json";
         private readonly DispatcherTimer waterLevelTimer;
         private readonly string DeviceId;
         private DeviceClient iotClient;
@@ -128,10 +130,22 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
 
         private async Task GetInitialConfiguration()
         {
+            // First - Read settings from a file
+            SumpPumpSettings fileSettings = null;
+            SumpPumpSettings twinSettings = null;
+            if (File.Exists(ConfigFile))
+                fileSettings = JsonConvert.DeserializeObject<SumpPumpSettings>(File.ReadAllText(ConfigFile));
+
             var twin = await iotClient.GetTwinAsync();
-            var properties = JsonConvert.DeserializeObject<SumpPumpSettings>(twin.Properties.Desired.ToString());
-            DeviceName = properties.DeviceName;
-            MaxWaterLevel = properties.MaxWaterLevel;
+            if (twin != null)
+                twinSettings = JsonConvert.DeserializeObject<SumpPumpSettings>(twin.Properties.Desired.ToString());
+
+            var settings = twinSettings ?? fileSettings;
+            DeviceName = settings.DeviceName;
+            MaxWaterLevel = settings.MaxWaterLevel;
+
+            if (twinSettings != null)
+                await SaveSettings(fileSettings, twinSettings);
         }
 
         private Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
@@ -143,6 +157,21 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
             //reportedProperties["DateTimeLastDesiredPropertyChangeReceived"] = DateTime.Now;
 
             //await Client.UpdateReportedPropertiesAsync(reportedProperties);
+        }
+
+        private async Task SaveSettings(SumpPumpSettings currentSettings, SumpPumpSettings newSettings)
+        {
+            if (currentSettings == null || currentSettings.DeviceName != newSettings.DeviceName || currentSettings.MaxWaterLevel != newSettings.MaxWaterLevel)
+            {
+                string newSettingsJson = JsonConvert.SerializeObject(newSettings);
+                using (var writer = File.CreateText(ConfigFile))
+                {
+                    writer.WriteLine(newSettingsJson);
+                    writer.Flush();
+                    writer.Close();
+                }
+                await iotClient.UpdateReportedPropertiesAsync(JsonConvert.DeserializeObject<TwinCollection>(newSettingsJson));
+            }
         }
 
         private async Task SendDataPoint()
