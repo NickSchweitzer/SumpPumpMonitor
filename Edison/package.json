@@ -1,11 +1,22 @@
 {
   "name": "edison",
   "version": "0.0.0",
-  "description": "Edison",
+  "description": "Intel Edison IoT Based Sump Pump Monitor",
   "main": "app.js",
   "author": {
     "name": "NickSchweitzer"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/NickSchweitzer/SumpPumpMonitor.git"
+  },
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.githubusercontent.com/NickSchweitzer/SumpPumpMonitor/master/LICENSE.txt"
+    }
+  ],
   "dependencies": {
     "azure-iot-device": "1.1.10",
     "azure-iot-device-mqtt": "1.1.10",
@@ -13,6 +24,7 @@
     "cylon-gpio": "^0.30.1",
     "cylon-i2c": "^0.26.1",
     "cylon-intel-iot": "^0.13.3",
+    "jsonfile": "^3.0.0",
     "macaddress": "^0.2.8"
   },
   "devDependencies": {

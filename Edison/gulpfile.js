@@ -1,4 +1,4 @@
-/// <binding BeforeBuild='' AfterBuild='post-build-copy, kill-processes, deploy, restore-packages' />
+/// <binding BeforeBuild='' AfterBuild='post-build-copy, kill-processes, deploy, restore-packages' Clean='clean' />
 "use strict";
 var gulp = require('gulp');
 var config = require('./config.json');
@@ -13,16 +13,17 @@ var conn;
 //    .pipe(jshint.reporter('default'));
 //});
 
-// deploy to the device
-// NOTE: this will only deploy files at the root project level; it is not recursive
+// Copy additional files to bin directory that don't come over as part of the TypeScript build
 gulp.task('post-build-copy', function () {
-    return gulp.src(['app.js', '*.json'])
+    return gulp.src(['app.js', 'RemoteDebug.js', 'README.md', '*.json'])
         .pipe(gulp.dest('bin'));
 });
 
+// deploy to the device
+// NOTE: this will only deploy files at the root project level; it is not recursive
 gulp.task('deploy', function () {
     var scp = require('gulp-scp2');
-    return gulp.src(['bin/*.{js,json}'])
+    return gulp.src(['bin/*.{js,json,md}'])
         .pipe(scp({
         host: config.host,
         username: config.user,
@@ -34,22 +35,25 @@ gulp.task('deploy', function () {
     });
 });
 
+// Remotely clean the Edison device as well if doing a full project clean
+gulp.task('clean', function () {
+    conn = new Client();
+    conn.on('ready', function () {
+        conn.exec('cd ~/' + config.projectName + '; rm --force --recursive *', execCallback);
+    }).connect({ host: config.host, port: config.sshPort, username: config.user, password: config.password });
+});
+
 //run npm install on the remote machine to assure all packages
 gulp.task('restore-packages', function () {
-    //var run = require('gulp-run');
-    //run('ssh ' + config.user + '@' + config.host + ' cd ~/' + config.projectName + '; npm install --production')
-    //    .exec().pipe(gulp.dest('output'));
-    var conn = new Client();
+    conn = new Client();
     conn.on('ready', function () {
-        //var path = config.projectName + '/' + config.startFile;
-        var path = config.startFile;
         conn.exec('cd ~/' + config.projectName + '; npm install --production', execCallback);
     }).connect({ host: config.host, port: config.sshPort, username: config.user, password: config.password });
 });
 
 //kill processes
 gulp.task('kill-processes', function () {
-    var conn = new Client();
+    conn = new Client();
     conn.on('ready', function () {
         //var path = config.projectName + '/' + config.startFile;
         var path = config.startFile;

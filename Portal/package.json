@@ -1,6 +1,17 @@
 {
   "name": "Portal",
   "version": "0.0.0",
+  "description": "ASP.NET Core Web Portal for Managing Sump Pump and Viewing Data",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/NickSchweitzer/SumpPumpMonitor.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.githubusercontent.com/NickSchweitzer/SumpPumpMonitor/master/LICENSE.txt"
+    }
+  ],
   "dependencies": {
     "aurelia-bootstrap-datetimepicker": "^1.0.5",
     "aurelia-bootstrapper-webpack": "^1.0.0",
