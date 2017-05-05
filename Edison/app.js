@@ -1,10 +1,5 @@
 ﻿var Edison = require('./EdisonUtilities');
 var SumpPump = require('./SumpPump');
-const IoTClient = require('azure-iot-device');
-const ConnectionString = require('azure-iot-device').ConnectionString;
-const Message = require('azure-iot-device').Message;
-const Protocol = require('azure-iot-device-mqtt').Mqtt;
-const macAddress = require('macaddress');
 
 const AD_RESOLUTION = 1023;
 const SYSTEM_VOLTAGE = 5.0;
@@ -24,25 +19,33 @@ require('cylon').robot({
         var that = this;
         var adConvert = new Edison.AtoDConverter(AD_RESOLUTION, SYSTEM_VOLTAGE);
         var pressureVoltage = 0;
+        var pump = new SumpPump.SumpPump();
 
-        //setTimeout(function () {
-            var pump = new SumpPump.SumpPump();
-        //}, 30000);
+        my.screen.clear();
+        my.screen.setCursor(0, 0);
+        my.screen.write('XXXXXXXXXXXXXXXX');
+        my.screen.setCursor(0, 1);
+        my.screen.write('XXXXXXXXXXXXXXXX');
 
-        every((0.1).second(), function () {
-            my.led.toggle();
-        });
+        setTimeout(function () {
+            pump.initialize().then(function () {
 
-        my.pressure.on('analogRead', function (val) {
-            that.pressureVoltage = adConvert.digitalToVoltage(val);
-        });
+            every((0.1).second(), function () {
+                my.led.toggle();
+            });
 
-        every((0.1).second(), function () {
-            var color = my.button.isPressed() ? 'Green' : 'Red';
-            var localVolts = that.pressureVoltage;
-            Edison.updateScreen(my, 'Volts: ' + localVolts,
-                'Ohms: ' + adConvert.voltageToResistance(localVolts, PULL_UP_RESISTOR),
-                color);
-        });
+            my.pressure.on('analogRead', function (val) {
+                that.pressureVoltage = adConvert.digitalToVoltage(val);
+            });
+
+            every((0.1).second(), function () {
+                var color = my.button.isPressed() ? 'Green' : 'Red';
+                var localVolts = that.pressureVoltage;
+                Edison.updateScreen(my, localVolts.toFixed(4),
+                    adConvert.voltageToResistance(localVolts, PULL_UP_RESISTOR).toFixed(4),
+                    color);
+            });
+            });
+        }, 30000);
     }
 }).start();
