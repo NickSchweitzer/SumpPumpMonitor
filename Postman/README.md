@@ -4,7 +4,7 @@ These files contain Postman Collections useful for testiong
 ## Azure IoT Hub.postman_collection.json
 Contains API Calls into Azure Hub, especially useful for working with Device Twins. Requires a Postman Environment with the following values in it:
 
-| Key | Value |
+| Key | Description |
 | --- | --- |
 | hubName | Azure IoT Hub Name (without the https) |
 | deviceId | ID of the Device you'd like to make calls on behalf of |
