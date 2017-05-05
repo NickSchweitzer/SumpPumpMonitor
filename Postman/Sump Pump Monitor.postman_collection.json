@@ -1,0 +1,55 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Sump Pump Monitor",
+		"_postman_id": "578413a9-20b2-d1bf-cdc3-2fa7879764ba",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Sump Pump List",
+			"request": {
+				"url": "{{baseUrl}}pumps/",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Sump Pump By Id",
+			"request": {
+				"url": "{{baseUrl}}pumps/00155DD72E03",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Sump Pump Data Points",
+			"request": {
+				"url": "{{baseUrl}}pumps/data/00155DD72E03",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Sump Pump Data Points by Date",
+			"request": {
+				"url": "{{baseUrl}}pumps/data/00155DD72E03?startDate=2017-04-17T12:33&endDate=2017-04-17T12:35",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

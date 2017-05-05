@@ -22,6 +22,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Edison", "Edison\Edison.njsproj", "{589C6745-B5B7-471A-8202-2290D81F687D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Postman", "Postman", "{B82EB75E-E1B6-41B1-986B-8898DA47F011}"
+	ProjectSection(SolutionItems) = preProject
+		Postman\Azure IoT Hub.postman_collection.json = Postman\Azure IoT Hub.postman_collection.json
+		Postman\README.md = Postman\README.md
+		Postman\Sump Pump Monitor.postman_collection.json = Postman\Sump Pump Monitor.postman_collection.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +62,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B82EB75E-E1B6-41B1-986B-8898DA47F011} = {CEE37731-CCB8-43C4-8DDF-25B449AFCB1F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8

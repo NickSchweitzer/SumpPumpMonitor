@@ -1,0 +1,242 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Azure IoT Hub",
+		"_postman_id": "ac89a4f7-e78e-9f3c-d4ea-da9ee8e37b00",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Device Twin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Body matches string\"] = responseBody.has(postman.getGlobalVariable(\"deviceId\"));"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// See this doc for details: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-security\r",
+							"var resourceUri = encodeURIComponent(postman.getGlobalVariable(\"hubName\") + '.azure-devices.net'); // The resource uri\r",
+							"var expiry = Math.ceil((Date.now() / 1000) + postman.getGlobalVariable(\"expiresInMins\") * 60); // Expire the token 60 minutes from now\r",
+							"var uriExpiry = resourceUri + '\\n' + expiry; // this is the string format to gen signature from\r",
+							"var decodedKey = CryptoJS.enc.Base64.parse(postman.getGlobalVariable(\"signingKey\")); // The SHA256 key is the Base64 decoded version of the IoT Hub key\r",
+							"var signature = CryptoJS.HmacSHA256(uriExpiry, decodedKey); // The signature generated from the decodedKey\r",
+							"var encodedUri = encodeURIComponent(CryptoJS.enc.Base64.stringify(signature)); // The url encoded version of the Base64 signature\r",
+							"\r",
+							"// Construct authorization string (shared access signature)\r",
+							"var token = \"SharedAccessSignature sr=\" + resourceUri + \"&sig=\" + encodedUri + \"&se=\" + expiry;\r",
+							"\r",
+							"// Add token if one is present\r",
+							"if (postman.getGlobalVariable(\"policyName\")) {\r",
+							"   token += \"&skn=\" + postman.getGlobalVariable(\"policyName\");\r",
+							"}\r",
+							"\r",
+							"// Put in variable to be used in other requests.\r",
+							"postman.setGlobalVariable(\"token\", token);\r",
+							"\r",
+							"console.log(\"Shared Access Signature:\" + postman.getGlobalVariable(\"token\"));"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://{{hubName}}.azure-devices.net/twins/{{deviceId}}?api-version=2016-11-14",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Update Device Settings",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Body matches string\"] = responseBody.has(postman.getGlobalVariable(\"deviceName\"));"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// See this doc for details: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-security\r",
+							"var resourceUri = encodeURIComponent(postman.getGlobalVariable(\"hubName\") + '.azure-devices.net'); // The resource uri\r",
+							"var expiry = Math.ceil((Date.now() / 1000) + postman.getGlobalVariable(\"expiresInMins\") * 60); // Expire the token 60 minutes from now\r",
+							"var uriExpiry = resourceUri + '\\n' + expiry; // this is the string format to gen signature from\r",
+							"var decodedKey = CryptoJS.enc.Base64.parse(postman.getGlobalVariable(\"signingKey\")); // The SHA256 key is the Base64 decoded version of the IoT Hub key\r",
+							"var signature = CryptoJS.HmacSHA256(uriExpiry, decodedKey); // The signature generated from the decodedKey\r",
+							"var encodedUri = encodeURIComponent(CryptoJS.enc.Base64.stringify(signature)); // The url encoded version of the Base64 signature\r",
+							"\r",
+							"// Construct authorization string (shared access signature)\r",
+							"var token = \"SharedAccessSignature sr=\" + resourceUri + \"&sig=\" + encodedUri + \"&se=\" + expiry;\r",
+							"\r",
+							"// Add token if one is present\r",
+							"if (postman.getGlobalVariable(\"policyName\")) {\r",
+							"   token += \"&skn=\" + postman.getGlobalVariable(\"policyName\");\r",
+							"}\r",
+							"\r",
+							"// Put in variable to be used in other requests.\r",
+							"postman.setGlobalVariable(\"token\", token);\r",
+							"\r",
+							"console.log(\"Shared Access Signature:\" + postman.getGlobalVariable(\"token\"));"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://{{hubName}}.azure-devices.net/twins/{{deviceId}}?api-version=2016-11-14",
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"deviceId\": \"{{deviceId}}\",\n\t\"properties\": {\n\t\t\"desired\": {\n\t\t\t\"deviceName\": \"{{deviceName}}\",\n\t\t\t\"maxWaterLevel\": 10\n\t\t}\n\t}\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Devices",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Body matches string\"] = responseBody.has(postman.getGlobalVariable(\"deviceId\"));"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// See this doc for details: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-security\r",
+							"var resourceUri = encodeURIComponent(postman.getGlobalVariable(\"hubName\") + '.azure-devices.net'); // The resource uri\r",
+							"var expiry = Math.ceil((Date.now() / 1000) + postman.getGlobalVariable(\"expiresInMins\") * 60); // Expire the token 60 minutes from now\r",
+							"var uriExpiry = resourceUri + '\\n' + expiry; // this is the string format to gen signature from\r",
+							"var decodedKey = CryptoJS.enc.Base64.parse(postman.getGlobalVariable(\"signingKey\")); // The SHA256 key is the Base64 decoded version of the IoT Hub key\r",
+							"var signature = CryptoJS.HmacSHA256(uriExpiry, decodedKey); // The signature generated from the decodedKey\r",
+							"var encodedUri = encodeURIComponent(CryptoJS.enc.Base64.stringify(signature)); // The url encoded version of the Base64 signature\r",
+							"\r",
+							"// Construct authorization string (shared access signature)\r",
+							"var token = \"SharedAccessSignature sr=\" + resourceUri + \"&sig=\" + encodedUri + \"&se=\" + expiry;\r",
+							"\r",
+							"// Add token if one is present\r",
+							"if (postman.getGlobalVariable(\"policyName\")) {\r",
+							"   token += \"&skn=\" + postman.getGlobalVariable(\"policyName\");\r",
+							"}\r",
+							"\r",
+							"// Put in variable to be used in other requests.\r",
+							"postman.setGlobalVariable(\"token\", token);\r",
+							"\r",
+							"console.log(\"Shared Access Signature:\" + postman.getGlobalVariable(\"token\"));"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://{{hubName}}.azure-devices.net/devices?api-version=2016-11-14",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Query Devices",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// See this doc for details: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-security\r",
+							"var resourceUri = encodeURIComponent(postman.getGlobalVariable(\"hubName\") + '.azure-devices.net'); // The resource uri\r",
+							"var expiry = Math.ceil((Date.now() / 1000) + postman.getGlobalVariable(\"expiresInMins\") * 60); // Expire the token 60 minutes from now\r",
+							"var uriExpiry = resourceUri + '\\n' + expiry; // this is the string format to gen signature from\r",
+							"var decodedKey = CryptoJS.enc.Base64.parse(postman.getGlobalVariable(\"signingKey\")); // The SHA256 key is the Base64 decoded version of the IoT Hub key\r",
+							"var signature = CryptoJS.HmacSHA256(uriExpiry, decodedKey); // The signature generated from the decodedKey\r",
+							"var encodedUri = encodeURIComponent(CryptoJS.enc.Base64.stringify(signature)); // The url encoded version of the Base64 signature\r",
+							"\r",
+							"// Construct authorization string (shared access signature)\r",
+							"var token = \"SharedAccessSignature sr=\" + resourceUri + \"&sig=\" + encodedUri + \"&se=\" + expiry;\r",
+							"\r",
+							"// Add token if one is present\r",
+							"if (postman.getGlobalVariable(\"policyName\")) {\r",
+							"   token += \"&skn=\" + postman.getGlobalVariable(\"policyName\");\r",
+							"}\r",
+							"\r",
+							"// Put in variable to be used in other requests.\r",
+							"postman.setGlobalVariable(\"token\", token);\r",
+							"\r",
+							"console.log(\"Shared Access Signature:\" + postman.getGlobalVariable(\"token\"));"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://{{hubName}}.azure-devices.net/devices/query?api-version=2016-11-14",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"query\": \"SELECT * from devices\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
