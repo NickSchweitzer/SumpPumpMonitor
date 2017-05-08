@@ -16,6 +16,7 @@ using Message = Microsoft.Azure.Devices.Client.Message;
 
 using CodingMonkeyNet.SumpPumpMonitor.IoT.Messages;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json.Serialization;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
 {
@@ -183,7 +184,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
                 }
 
                 // Tell Azure we took their settings
-                await iotClient.UpdateReportedPropertiesAsync(JsonConvert.DeserializeObject<TwinCollection>(newSettingsJson));
+                var serializerSettings = new JsonSerializerSettings()
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                };
+                await iotClient.UpdateReportedPropertiesAsync(JsonConvert.DeserializeObject<TwinCollection>(newSettingsJson, serializerSettings));
             }
         }
 
