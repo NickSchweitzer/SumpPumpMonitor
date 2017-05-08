@@ -29,6 +29,6 @@ WPF Application which behaves like a Sump Pump, and sends data to IoT Hub. It is
 * Data - Contains shared Azure Table Storage respository code for the Portal and WebJobs
 * IoT - Contains shared definitions of messages and alerts used by the Emulator and WebJobs
 
-### [Postman Libraries](Postman/README.md)
+### [Postman Collections](Postman/README.md)
 
 Postman collections are available for testing the IoT Hub functionality as well as the Portal API
