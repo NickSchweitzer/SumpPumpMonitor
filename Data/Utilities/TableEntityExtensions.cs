@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Data.Utilities
 {
@@ -12,9 +9,14 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Utilities
             return string.Format("{0:D19}", DateTime.MaxValue.Ticks - dt.Ticks);
         }
 
-        public static DateTime ToDateTime(this string rowKey)
+        public static DateTime FromRowKey(this string rowKey)
         {
             return new DateTime(DateTime.MaxValue.Ticks - Int64.Parse(rowKey));
+        }
+
+        public static double TotalSeconds(this TimeSpan timeSpan)
+        {
+            return timeSpan.Ticks * 1E-07;
         }
     }
 }

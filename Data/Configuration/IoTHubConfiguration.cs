@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Services
+namespace CodingMonkeyNet.SumpPumpMonitor.Data.Configuration
 {
     public class IoTHubConfiguration
     {

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.Azure;
+using Microsoft.Azure.WebJobs;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.Azure.WebJobs.ServiceBus;
@@ -19,7 +20,6 @@ namespace CodingMonkey.SumpPumpMonitor.WebJobs
         //private static readonly CloudTable DataPointTable;
         private static readonly DataPointRepository DataPointRepository;
         private static readonly DutyCycleRepository DutyCycleRepository;
-        private static readonly SumpPumpMetaRepository MetaDataRepository;
 
         static Functions()
         {
@@ -33,7 +33,6 @@ namespace CodingMonkey.SumpPumpMonitor.WebJobs
             DataPointRepository = new DataPointRepository(tableStorageConnectionString);
 
             DutyCycleRepository = new DutyCycleRepository(tableStorageConnectionString);
-            MetaDataRepository = new SumpPumpMetaRepository(tableStorageConnectionString);
         }
 
         public async static Task ProcessSumpPumpDataPoint([EventHubTrigger("iothub-ehub-sumppump-i-31562-57e63b098f")] DataPointPayload payload)
@@ -47,8 +46,6 @@ namespace CodingMonkey.SumpPumpMonitor.WebJobs
             };
             DataPointRepository.Insert(newDataPoint);
 
-            // Get the Settings for the pump or create if it doesn't exist
-            var metaData =  await GetMetaData(payload);
             /*
             // Get Current Duty Cycle we're in the middle of
             var currentDutyCycle = await GetCurrentDutyCycle(payload);
@@ -62,6 +59,11 @@ namespace CodingMonkey.SumpPumpMonitor.WebJobs
             currentDutyCycle.EndTime = payload.Timestamp;
             DutyCycleRepository.Upsert(currentDutyCycle);
             */
+        }
+
+        public async static Task ProcessAlertMessage([ServiceBusTrigger("sumppumpalerts")] AlertPayload payload)
+        {
+
         }
 
         private async static Task<DutyCycleEntity> GetCurrentDutyCycle(DataPointPayload payload)
@@ -85,27 +87,6 @@ namespace CodingMonkey.SumpPumpMonitor.WebJobs
                 StartTime = payload.Timestamp,
                 IsEmptying = payload.PumpRunning
             };
-        }
-
-        private async static Task<SumpPumpMetaEntity> GetMetaData(DataPointPayload payload)
-        {
-            var metaDataList = await MetaDataRepository.Top(payload.DeviceId, 1);
-            var metaData = metaDataList.FirstOrDefault();
-
-            // First time seeing this pump, need to create a record for it with defaults
-            if (metaData == null)
-            {
-                metaData = new SumpPumpMetaEntity
-                {
-                    PartitionKey = payload.DeviceId,
-                    RowKey = "MetaData",        // Why not?
-                    InError = false,
-                    MaxRunTimeNoChange = 60,    // 1 minute default
-                    MaxWaterLevel = 10          // 10 inches high default
-                };
-                MetaDataRepository.Insert(metaData);
-            }
-            return metaData;
         }
     }
 }

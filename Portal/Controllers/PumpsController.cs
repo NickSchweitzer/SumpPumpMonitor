@@ -17,23 +17,22 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
     public class PumpsController : Controller
     {
         private readonly ITableRepository<DataPointEntity> DataPointRepository;
-        private readonly ITableRepository<SumpPumpMetaEntity> MetaDataRepository;
         private readonly IIoTHubSender<SumpPumpSettings> IoTHub;
+        private readonly TwinRepository TwinRepository;
         private readonly IMapper Mapper;
 
-        public PumpsController(ITableRepository<DataPointEntity> dataPointRepo, ITableRepository<SumpPumpMetaEntity> metaRepo, IMapper mapper, 
-            IIoTHubSender<SumpPumpSettings> iotHub)
+        public PumpsController(ITableRepository<DataPointEntity> dataPointRepo, IMapper mapper, IIoTHubSender<SumpPumpSettings> iotHub, TwinRepository twinRepo)
         {
             DataPointRepository = dataPointRepo;
-            MetaDataRepository = metaRepo;
+            TwinRepository = twinRepo;
             Mapper = mapper;
             IoTHub = iotHub;
         }
 
         public async Task<IEnumerable<SumpPump>> Pumps()
         {
-            IEnumerable<SumpPumpMetaEntity> entities = await MetaDataRepository.All();
-            var pumpList = Mapper.Map<IEnumerable<SumpPumpMetaEntity>, IEnumerable<SumpPump>>(entities);
+            IEnumerable<DeviceTwinQueryEntity> entities = await TwinRepository.All();
+            var pumpList = Mapper.Map<IEnumerable<DeviceTwinQueryEntity>, IEnumerable<SumpPump>>(entities);
             foreach (var pump in pumpList)
             {
                 var topDataPointQuery = await DataPointRepository.Top(pump.PumpId, 1);
@@ -46,12 +45,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
         [HttpGet("{pumpId}")]
         public async Task<SumpPump> Pumps(string pumpId)
         {
-            IEnumerable<SumpPumpMetaEntity> entities = await MetaDataRepository.Top(pumpId, 1);
-
+            DeviceTwinQueryEntity entity = await TwinRepository.ById(pumpId);
             var topDataPointQuery = await DataPointRepository.Top(pumpId, 1);
             DataPointEntity currentData = topDataPointQuery.FirstOrDefault();
 
-            var partialPump = Mapper.Map<SumpPumpMetaEntity, SumpPump>(entities.FirstOrDefault());
+            var partialPump = Mapper.Map<DeviceTwinQueryEntity, SumpPump>(entity);
             return Mapper.Map<DataPointEntity, SumpPump>(currentData, partialPump);
         }
 
@@ -61,21 +59,12 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
             if (pump == null || pump.PumpId != pumpId)
                 return BadRequest();
 
-            IEnumerable<SumpPumpMetaEntity> entities = await MetaDataRepository.Top(pumpId, 1);
-            var repoPump = entities.FirstOrDefault();
-            if (repoPump == null)
+            DeviceTwinQueryEntity twinPump = await TwinRepository.ById(pumpId);
+            if (twinPump == null)
                 return NotFound();
 
-            repoPump.Name = pump.Name;
-            repoPump.MaxWaterLevel = pump.MaxWaterLevel;
-            repoPump.MaxRunTimeNoChange = pump.MaxRunTimeNoChange;
-
-            MetaDataRepository.Upsert(repoPump);
-            IoTHub.SendMessage(pumpId, new SumpPumpSettings
-            {
-                MaxWaterLevel = pump.MaxWaterLevel,
-                MaxRunTimeNoChange = pump.MaxRunTimeNoChange
-            });
+            var updatePump = Mapper.Map<SumpPump, DeviceTwinUpdateEntity>(pump);
+            TwinRepository.Update(updatePump);
             return new NoContentResult();
         }
 

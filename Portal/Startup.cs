@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.Webpack;
@@ -15,6 +12,7 @@ using CodingMonkeyNet.SumpPumpMonitor.Data.Entities;
 using CodingMonkeyNet.SumpPumpMonitor.Data.Repositories;
 using CodingMonkeyNet.SumpPumpMonitor.Portal.Services;
 using CodingMonkeyNet.SumpPumpMonitor.IoT.Messages;
+using CodingMonkeyNet.SumpPumpMonitor.Data.Configuration;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Portal
 {
@@ -49,8 +47,8 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal
 
             services.AddAutoMapper();
             services.AddScoped<ITableRepository<DataPointEntity>>(p => new DataPointRepository(connectionString));
-            services.AddScoped<ITableRepository<SumpPumpMetaEntity>>(p => new SumpPumpMetaRepository(connectionString));
             services.AddScoped<IIoTHubSender<SumpPumpSettings>>(p => new SumpPumpService(iotConfig));
+            services.AddScoped<TwinRepository>(p => new TwinRepository(iotConfig));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
