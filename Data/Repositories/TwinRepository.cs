@@ -6,6 +6,7 @@ using System.Text;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Net;
+using AutoMapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -28,6 +29,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Repositories
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
+
+            Mapper.Initialize(cfg => {
+                cfg.CreateMap<DeviceTwinEntity, DeviceTwinUpdateEntity>();
+                cfg.CreateMap<SumpPumpSettingPair, SumpPumpSettingUpdate>();
+            });
         }
 
         public TwinRepository(IoTHubConfiguration config)
@@ -42,7 +48,7 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<DeviceTwinQueryEntity>> All()
+        public async Task<IEnumerable<DeviceTwinEntity>> All()
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "/devices/query?api-version=2016-11-14");
             request.Content = new StringContent("{ \"query\": \"SELECT * from devices\" }", Encoding.UTF8, "application/json");
@@ -54,10 +60,10 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Repositories
 
             JsonSerializerSettings settings = new JsonSerializerSettings();
             string responseString = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<List<DeviceTwinQueryEntity>>(responseString);
+            return JsonConvert.DeserializeObject<List<DeviceTwinEntity>>(responseString);
         }
 
-        public async Task<DeviceTwinQueryEntity> ById(string deviceId)
+        public async Task<DeviceTwinEntity> ById(string deviceId)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format("/twins/{0}?api-version=2016-11-14", deviceId));
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature",
@@ -68,14 +74,15 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Repositories
 
             JsonSerializerSettings settings = new JsonSerializerSettings();
             string responseString = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<DeviceTwinQueryEntity>(responseString);
+            return JsonConvert.DeserializeObject<DeviceTwinEntity>(responseString);
         }
 
-        public async Task Update(DeviceTwinUpdateEntity entity)
+        public async Task Update(DeviceTwinEntity entity)
         {
+            DeviceTwinUpdateEntity patchEntity = Mapper.Map<DeviceTwinUpdateEntity>(entity);
             var method = new HttpMethod("PATCH");
             HttpRequestMessage request = new HttpRequestMessage(method, string.Format("/twins/{0}?api-version=2016-11-14", entity.DeviceId));
-            string json = JsonConvert.SerializeObject(entity, JsonSettings);
+            string json = JsonConvert.SerializeObject(patchEntity, JsonSettings);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature",
                 GetSharedAccessSignature(Config.SharedAccessKeyName, Config.SharedAccessKey, Config.HostName, new TimeSpan(1, 0, 0)));

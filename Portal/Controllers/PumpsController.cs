@@ -31,8 +31,8 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
 
         public async Task<IEnumerable<SumpPump>> Pumps()
         {
-            IEnumerable<DeviceTwinQueryEntity> entities = await TwinRepository.All();
-            var pumpList = Mapper.Map<IEnumerable<DeviceTwinQueryEntity>, IEnumerable<SumpPump>>(entities);
+            IEnumerable<DeviceTwinEntity> entities = await TwinRepository.All();
+            var pumpList = Mapper.Map<IEnumerable<DeviceTwinEntity>, IEnumerable<SumpPump>>(entities);
             foreach (var pump in pumpList)
             {
                 var topDataPointQuery = await DataPointRepository.Top(pump.PumpId, 1);
@@ -45,11 +45,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
         [HttpGet("{pumpId}")]
         public async Task<SumpPump> Pumps(string pumpId)
         {
-            DeviceTwinQueryEntity entity = await TwinRepository.ById(pumpId);
+            DeviceTwinEntity entity = await TwinRepository.ById(pumpId);
             var topDataPointQuery = await DataPointRepository.Top(pumpId, 1);
             DataPointEntity currentData = topDataPointQuery.FirstOrDefault();
 
-            var partialPump = Mapper.Map<DeviceTwinQueryEntity, SumpPump>(entity);
+            var partialPump = Mapper.Map<DeviceTwinEntity, SumpPump>(entity);
             return Mapper.Map<DataPointEntity, SumpPump>(currentData, partialPump);
         }
 
@@ -59,11 +59,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
             if (pump == null || pump.PumpId != pumpId)
                 return BadRequest();
 
-            DeviceTwinQueryEntity twinPump = await TwinRepository.ById(pumpId);
+            DeviceTwinEntity twinPump = await TwinRepository.ById(pumpId);
             if (twinPump == null)
                 return NotFound();
 
-            var updatePump = Mapper.Map<SumpPump, DeviceTwinUpdateEntity>(pump);
+            var updatePump = Mapper.Map<SumpPump, DeviceTwinEntity>(pump);
             TwinRepository.Update(updatePump);
             return new NoContentResult();
         }

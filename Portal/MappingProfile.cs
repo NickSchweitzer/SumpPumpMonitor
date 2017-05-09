@@ -18,15 +18,15 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal
                 .ForMember(dest => dest.CurrentWaterLevel, opt => opt.MapFrom(src => src.WaterLevel))
                 .ForMember(dest => dest.LastDataRecorded, opt => opt.MapFrom(src => src.RowKey.FromRowKey()));
 
-            CreateMap<DeviceTwinQueryEntity, SumpPump>()
+            CreateMap<DeviceTwinEntity, SumpPump>()
                 .ForMember(dest => dest.PumpId, opt => opt.MapFrom(src => src.DeviceId))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Properties.Desired.DeviceName))
                 .ForMember(dest => dest.MaxWaterLevel, opt => opt.MapFrom(src => src.Properties.Desired.MaxWaterLevel))
                 .ForMember(dest => dest.MaxRunTimeNoChange, opt => opt.MapFrom(src => src.Properties.Desired.MaxRunTimeNoChange));
 
-            CreateMap<SumpPump, DeviceTwinUpdateEntity>()
+            CreateMap<SumpPump, DeviceTwinEntity>()
                 .ForMember(dest => dest.DeviceId, opt => opt.MapFrom(src => src.PumpId))
-                .ForMember(dest => dest.Properties, opt => opt.MapFrom(src => new SumpPumpSettingUpdate
+                .ForMember(dest => dest.Properties, opt => opt.MapFrom(src => new SumpPumpSettingPair
                 {
                     Desired = new SumpPumpSetting
                     {
