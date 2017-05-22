@@ -5,8 +5,10 @@
             <div class="form-group has-feedback" validation-errors.bind="sumpPumpNameErrors" class.bind="sumpPumpNameErrors.length ? 'has-error' : ''">
                 <label for="sumpPumpName">Sump Pump Name</label>
                 <input type="text" id="sumpPumpName" class="form-control" placeholder="Sump Pump Name" value.bind="pump.desired.name & validate" />
-                <span class.bind="sumpPumpNameErrors.length ? 'glyphicon glyphicon-remove form-control-feedback' : 'glyphicon glyphicon-ok form-control-feedback'"></span>
-                <span class="help-block">Device Reported: ${pump.reported.name}</span>
+                <span class="help-block">Name of the device - purely for organizational and reporting purposes.</span>
+                <div class.bind="pump.desired.name == pump.reported.name ? 'alert alert-info' : 'alert alert-warning'">
+                    Device Reported: ${pump.reported.name}
+                </div>
                 <span class="help-block" repeat.for="errorInfo of sumpPumpNameErrors">
                     ${errorInfo.error.message}
                 </span>
@@ -16,18 +18,22 @@
                 <input type="text" id="maxWaterLevel" class="form-control" placeholder="inches" value.bind="pump.desired.maxWaterLevel & validate" />
                 <span class.bind="maxWaterLevelErrors.length ? 'glyphicon glyphicon-remove form-control-feedback' : 'glyphicon glyphicon-ok form-control-feedback'"></span>
                 <span class="help-block">Maximum water level (in inches) before an alert is sent.</span>
-                <span class="help-block">Device Reported: ${pump.reported.maxWaterLevel}</span>
+                <div class.bind="pump.desired.maxWaterLevel == pump.reported.maxWaterLevel ? 'alert alert-info' : 'alert alert-warning'">
+                    Device Reported: ${pump.reported.maxWaterLevel}
+                </div>
                 <span class="help-block" repeat.for="errorInfo of maxWaterLevelErrors">
                     ${errorInfo.error.message}
                 </span>
-            </div>
+                </div>
             <div class="form-group has-feedback" validation-errors.bind="maxRunTimeNoChangeErrors" class.bind="maxRunTimeNoChangeErrors.length ? 'has-error' : ''">
                 <label for="maxRunTimeNoChange">Maximum Time of No Water Level Change</label>
                 <input type="text" id="maxRunTimeNoChange" class="form-control" placeholder="seconds" value.bind="pump.desired.maxRunTimeNoChange & validate" />
                 <span class.bind="maxRunTimeNoChangeErrors.length ? 'glyphicon glyphicon-remove form-control-feedback' : 'glyphicon glyphicon-ok form-control-feedback'"></span>
                 <span class="help-block">Maximum time (in seconds) that the pump will run without the water level changing before
                 an alert is sent.</span>
-                <span class="help-block">Device Reported: ${pump.reported.maxRunTimeNoChange}</span>
+                <div class.bind="pump.desired.maxRunTimeNoChange == pump.reported.maxRunTimeNoChange ? 'alert alert-info' : 'alert alert-warning'">
+                    Device Reported: ${pump.reported.maxRunTimeNoChange}
+                </div>
                 <span class="help-block" repeat.for="errorInfo of maxRunTimeNoChangeErrors">
                     ${errorInfo.error.message}
                 </span>
