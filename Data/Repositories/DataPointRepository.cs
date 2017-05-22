@@ -5,6 +5,6 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Repositories
 {
     public class DataPointRepository : TableRepository<DataPointEntity>
     {
-        public DataPointRepository(string connectionString) : base(connectionString, "SumpPumpMonitorData") { }
+        public DataPointRepository(string connectionString) : base(connectionString, "DataPoints") { }
     }
 }

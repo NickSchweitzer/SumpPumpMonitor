@@ -8,8 +8,6 @@ using AutoMapper;
 using CodingMonkeyNet.SumpPumpMonitor.Portal.Models;
 using CodingMonkeyNet.SumpPumpMonitor.Data.Entities;
 using CodingMonkeyNet.SumpPumpMonitor.Data.Repositories;
-using CodingMonkeyNet.SumpPumpMonitor.IoT.Messages;
-using CodingMonkeyNet.SumpPumpMonitor.Portal.Services;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
 {
@@ -17,27 +15,27 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
     public class PumpsController : Controller
     {
         private readonly ITableRepository<DataPointEntity> DataPointRepository;
-        private readonly IIoTHubSender<SumpPumpSettings> IoTHub;
-        private readonly TwinRepository TwinRepository;
+        private readonly ITableRepository<AlertEntity> AlertRepository;
+        private readonly ITwinRepository<SumpPumpSettingEntity> TwinRepository;
         private readonly IMapper Mapper;
 
-        public PumpsController(ITableRepository<DataPointEntity> dataPointRepo, IMapper mapper, IIoTHubSender<SumpPumpSettings> iotHub, TwinRepository twinRepo)
+        public PumpsController(ITableRepository<DataPointEntity> dataPointRepo, IMapper mapper,
+            ITwinRepository<SumpPumpSettingEntity> twinRepo)
         {
             DataPointRepository = dataPointRepo;
             TwinRepository = twinRepo;
             Mapper = mapper;
-            IoTHub = iotHub;
         }
 
         public async Task<IEnumerable<SumpPump>> Pumps()
         {
-            IEnumerable<DeviceTwinEntity> entities = await TwinRepository.All();
-            var pumpList = Mapper.Map<IEnumerable<DeviceTwinEntity>, IEnumerable<SumpPump>>(entities);
+            IEnumerable<DeviceTwinEntity<SumpPumpSettingEntity>> entities = await TwinRepository.All();
+            var pumpList = Mapper.Map<IEnumerable<DeviceTwinEntity<SumpPumpSettingEntity>>, IEnumerable<SumpPump>>(entities);
             foreach (var pump in pumpList)
             {
                 var topDataPointQuery = await DataPointRepository.Top(pump.PumpId, 1);
                 DataPointEntity currentData = topDataPointQuery.FirstOrDefault();
-                Mapper.Map<DataPointEntity, SumpPump>(currentData, pump);
+                pump.LastPoint = Mapper.Map<DataPointEntity, DataPoint>(currentData);
             }
             return pumpList;
         }
@@ -45,12 +43,13 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
         [HttpGet("{pumpId}")]
         public async Task<SumpPump> Pumps(string pumpId)
         {
-            DeviceTwinEntity entity = await TwinRepository.ById(pumpId);
+            DeviceTwinEntity<SumpPumpSettingEntity> entity = await TwinRepository.ById(pumpId);
             var topDataPointQuery = await DataPointRepository.Top(pumpId, 1);
             DataPointEntity currentData = topDataPointQuery.FirstOrDefault();
 
-            var partialPump = Mapper.Map<DeviceTwinEntity, SumpPump>(entity);
-            return Mapper.Map<DataPointEntity, SumpPump>(currentData, partialPump);
+            var partialPump = Mapper.Map<DeviceTwinEntity<SumpPumpSettingEntity>, SumpPump>(entity);
+            partialPump.LastPoint = Mapper.Map<DataPointEntity, DataPoint>(currentData);
+            return partialPump;
         }
 
         [HttpPut("{pumpId}")]
@@ -59,11 +58,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
             if (pump == null || pump.PumpId != pumpId)
                 return BadRequest();
 
-            DeviceTwinEntity twinPump = await TwinRepository.ById(pumpId);
+            DeviceTwinEntity<SumpPumpSettingEntity> twinPump = await TwinRepository.ById(pumpId);
             if (twinPump == null)
                 return NotFound();
 
-            var updatePump = Mapper.Map<SumpPump, DeviceTwinEntity>(pump);
+            var updatePump = Mapper.Map<SumpPump, DeviceTwinEntity<SumpPumpSettingEntity>>(pump);
             TwinRepository.Update(updatePump);
             return new NoContentResult();
         }
@@ -82,6 +81,22 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal.Controllers
                 entities = await DataPointRepository.Range(pumpId, startDate.Value, endDate);
 
             return Mapper.Map<IEnumerable<DataPointEntity>, IEnumerable<DataPoint>>(entities);
+        }
+
+        [HttpGet("[action]/{pumpId}")]
+        public async Task<IEnumerable<Alert>> Alerts(string pumpId, DateTime? startDate, DateTime? endDate)
+        {
+            if (startDate == null && endDate != null)
+                startDate = DateTime.Now;
+
+            IEnumerable<AlertEntity> entities;
+
+            if (startDate == null && endDate == null)
+                entities = await AlertRepository.All(pumpId);
+            else
+                entities = await AlertRepository.Range(pumpId, startDate.Value, endDate);
+
+            return Mapper.Map<IEnumerable<AlertEntity>, IEnumerable<Alert>>(entities);
         }
     }
 }

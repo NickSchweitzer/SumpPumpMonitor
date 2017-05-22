@@ -26,6 +26,7 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
         private const string ConfigFile = "config.json";
         private readonly DispatcherTimer waterLevelTimer;
         private readonly string DeviceId;
+        private bool highWaterError = false;
         private DeviceClient iotClient;
         private SumpPumpSettings settings = new SumpPumpSettings();
         private const Microsoft.Azure.Devices.Client.TransportType ClientTransportType = Microsoft.Azure.Devices.Client.TransportType.Mqtt;
@@ -91,7 +92,13 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
                 else
                     CurrentWaterLevel = waterLevel;
             }
-            //await Task.Delay(500);
+
+            if (CurrentWaterLevel > MaxWaterLevel && !highWaterError)
+            {
+                highWaterError = true;
+                SendAlert(AlertPayloadType.HighWater);
+            }
+
             await SendDataPoint();
         }
 
@@ -189,6 +196,25 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Emulator
                     ContractResolver = new CamelCasePropertyNamesContractResolver()
                 };
                 await iotClient.UpdateReportedPropertiesAsync(JsonConvert.DeserializeObject<TwinCollection>(newSettingsJson, serializerSettings));
+            }
+        }
+
+        private async Task SendAlert(AlertPayloadType type)
+        {
+            var payload = new AlertPayload
+            {
+                DeviceId = DeviceId,
+                Timestamp = DateTime.Now,
+                WaterLevel = CurrentWaterLevel,
+                PumpRunning = PumpStatus,
+                Type = type
+            };
+
+            var json = JsonConvert.SerializeObject(payload);
+            using (var message = new Message(Encoding.UTF8.GetBytes(json)))
+            {
+                message.Properties.Add("DeviceName", DeviceId);
+                await iotClient.SendEventAsync(message);
             }
         }
 

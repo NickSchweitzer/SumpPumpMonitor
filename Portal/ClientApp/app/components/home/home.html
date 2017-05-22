@@ -5,9 +5,9 @@
         <ul class="list-group">
             <li repeat.for="pump of pumps" class="list-group-item ${pump.pumpId === $parent.selectedId ? 'active' : '' }">
                 <a route-href="route: pumpdetail; params.bind: {id: pump.pumpId}" click.delegate="$parent.select(pump)">
-                    <h4 class="list-group-item-heading">${pump.name}</h4>
+                    <h4 class="list-group-item-heading">${pump.reported.name}</h4>
                     <p class="list-group-item-text">ID: ${pump.pumpId}</p>
-                    <p class="list-group-item-text">Water Level: ${pump.currentWaterLevel} in.</p>
+                    <p class="list-group-item-text">Water Level: ${pump.lastPoint.waterLevel} in.</p>
                 </a>
                 <button type="button" class="btn btn-primary" click.trigger="$parent.edit(pump)">
                     <span class="glyphicon glyphicon-edit"></span> Edit

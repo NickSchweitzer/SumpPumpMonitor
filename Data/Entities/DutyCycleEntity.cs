@@ -1,5 +1,4 @@
 ﻿using System;
-
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Data.Entities

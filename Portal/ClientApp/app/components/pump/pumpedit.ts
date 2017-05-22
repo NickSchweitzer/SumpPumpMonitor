@@ -1,7 +1,7 @@
 ﻿import { Api } from '../../api';
 import { inject, NewInstance } from 'aurelia-framework';
 import { ValidationRules, ValidationController } from 'aurelia-validation';
-import { SumpPump } from '../../models';
+import { SumpPump, PumpConfiguration } from '../../models';
 import { Notification } from 'aurelia-notification';
 //import "humane-js/themes/libnotify.css!";
 
@@ -27,18 +27,18 @@ export class PumpDetail {
                 this.pump = data;
 
                 ValidationRules
-                    .ensure((sp: SumpPump) => sp.name)
+                    .ensure((pc: PumpConfiguration) => pc.name)
                         .displayName('Sump Pump Name')
                         .required()
-                    .ensure((sp: SumpPump) => sp.maxWaterLevel)
+                    .ensure((pc: PumpConfiguration) => pc.maxWaterLevel)
                         .displayName('Maximum Water Level')
                         .required()
                         .satisfiesRule('integerRange', 0, 15)
-                    .ensure((sp: SumpPump) => sp.maxRunTimeNoChange)
+                    .ensure((pc: PumpConfiguration) => pc.maxRunTimeNoChange)
                         .displayName('Maximum Time of No Water Level Change')
                         .required()
                         .satisfiesRule('integerRange', 0, 60)
-                    .on(this.pump);
+                    .on(this.pump.desired);
             });
     }
 

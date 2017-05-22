@@ -47,8 +47,9 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal
 
             services.AddAutoMapper();
             services.AddScoped<ITableRepository<DataPointEntity>>(p => new DataPointRepository(connectionString));
+            services.AddScoped<ITableRepository<AlertEntity>>(p => new AlertRepository(connectionString));
             services.AddScoped<IIoTHubSender<SumpPumpSettings>>(p => new SumpPumpService(iotConfig));
-            services.AddScoped<TwinRepository>(p => new TwinRepository(iotConfig));
+            services.AddScoped<ITwinRepository<SumpPumpSettingEntity>>(p => new SettingsRepository(iotConfig));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

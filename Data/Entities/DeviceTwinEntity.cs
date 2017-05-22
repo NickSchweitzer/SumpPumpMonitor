@@ -2,33 +2,30 @@
 
 namespace CodingMonkeyNet.SumpPumpMonitor.Data.Entities
 {
-    public class DeviceTwinEntity
+    public class DeviceTwinEntity<T>
+        where T: new()
     {
         public string DeviceId { get; set; }
-        public SumpPumpSettingPair Properties { get; set; }
+        public TwinSettingPair<T> Properties { get; set; }
     }
 
-    public class SumpPumpSettingPair
+    public class TwinSettingPair<T>
+        where T : new()
     {
-        public SumpPumpSetting Desired { get; set; }
-        public SumpPumpSetting Reported { get; set; }
+        public T Desired { get; set; }
+        public T Reported { get; set; }
     }
 
-    internal class DeviceTwinUpdateEntity
+    internal class DeviceTwinUpdateEntity<T>
+        where T : new()
     {
         public string DeviceId { get; set; }
-        public SumpPumpSettingUpdate Properties { get; set; }
+        public TwinSettingUpdate<T> Properties { get; set; }
     }
 
-    internal class SumpPumpSettingUpdate
+    internal class TwinSettingUpdate<T>
+        where T : new()
     {
-        public SumpPumpSetting Desired { get; set; }
-    }
-
-    public class SumpPumpSetting
-    {
-        public string DeviceName { get; set; }
-        public double MaxWaterLevel { get; set; }
-        public double MaxRunTimeNoChange { get; set; }
+        public T Desired { get; set; }
     }
 }

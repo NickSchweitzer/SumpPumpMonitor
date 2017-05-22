@@ -14,25 +14,25 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Portal
                 .ForMember(dest => dest.PumpId, opt => opt.MapFrom(src => src.PartitionKey))
                 .ForMember(dest => dest.TimeStamp, opt => opt.MapFrom(src => src.RowKey.FromRowKey()));
 
-            CreateMap<DataPointEntity, SumpPump>() // For current water level and pump status
-                .ForMember(dest => dest.CurrentWaterLevel, opt => opt.MapFrom(src => src.WaterLevel))
-                .ForMember(dest => dest.LastDataRecorded, opt => opt.MapFrom(src => src.RowKey.FromRowKey()));
+            CreateMap<AlertEntity, Alert>();
 
-            CreateMap<DeviceTwinEntity, SumpPump>()
+            CreateMap<SumpPumpSettingEntity, PumpConfiguration>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.DeviceName));
+
+            CreateMap<DeviceTwinEntity<SumpPumpSettingEntity>, SumpPump>()
                 .ForMember(dest => dest.PumpId, opt => opt.MapFrom(src => src.DeviceId))
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Properties.Desired.DeviceName))
-                .ForMember(dest => dest.MaxWaterLevel, opt => opt.MapFrom(src => src.Properties.Desired.MaxWaterLevel))
-                .ForMember(dest => dest.MaxRunTimeNoChange, opt => opt.MapFrom(src => src.Properties.Desired.MaxRunTimeNoChange));
+                .ForMember(dest => dest.Desired, opt => opt.MapFrom(src => src.Properties.Desired))
+                .ForMember(dest => dest.Reported, opt => opt.MapFrom(src => src.Properties.Reported));
 
-            CreateMap<SumpPump, DeviceTwinEntity>()
+            CreateMap<SumpPump, DeviceTwinEntity<SumpPumpSettingEntity>>()
                 .ForMember(dest => dest.DeviceId, opt => opt.MapFrom(src => src.PumpId))
-                .ForMember(dest => dest.Properties, opt => opt.MapFrom(src => new SumpPumpSettingPair
+                .ForMember(dest => dest.Properties, opt => opt.MapFrom(src => new TwinSettingPair<SumpPumpSettingEntity>
                 {
-                    Desired = new SumpPumpSetting
+                    Desired = new SumpPumpSettingEntity
                     {
-                        DeviceName = src.Name,
-                        MaxWaterLevel = src.MaxWaterLevel,
-                        MaxRunTimeNoChange = src.MaxRunTimeNoChange
+                        DeviceName = src.Desired.Name,
+                        MaxWaterLevel = src.Desired.MaxWaterLevel,
+                        MaxRunTimeNoChange = src.Desired.MaxRunTimeNoChange
                     }
                 }));
         }

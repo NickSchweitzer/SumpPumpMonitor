@@ -5,6 +5,8 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Repositories
 {
     public class DutyCycleRepository : TableRepository<DutyCycleEntity>
     {
-        public DutyCycleRepository(string connectionString) : base(connectionString, "SumpPumpMonitorDuty") { }
+        public DutyCycleRepository(string connectionString) 
+            : base(connectionString, "DutyCycles")
+        { }
     }
 }

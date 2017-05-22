@@ -1,13 +1,16 @@
 ﻿export interface SumpPump {
     pumpId: string;
-    name: string;
+    desired: PumpConfiguration;
+    reported: PumpConfiguration;
+    lastPoint: DataPoint;
+    data: string;
+    alerts: string;
+}
+
+export interface PumpConfiguration {
+    name: string; 
     maxWaterLevel: number;
     maxRunTimeNoChange: number;
-    currentWaterLevel: number;
-    pumpRunning: boolean;
-    lastDataRecorded: string;   // Timestamp
-    inError: boolean;
-    data: string;
 }
 
 export interface DataPoint {
@@ -15,6 +18,14 @@ export interface DataPoint {
     timeStamp: string;
     waterLevel: number;
     pumpRunning: boolean;
+}
+
+export interface Alert {
+    pumpId: string;
+    timeStamp: string;
+    waterLevel: number;
+    pumpRunning: boolean;
+    type: string;
 }
 
 type Durations = 'seconds' |

@@ -20,10 +20,10 @@ namespace CodingMonkey.SumpPumpMonitor.WebJobs
         //private static readonly CloudTable DataPointTable;
         private static readonly DataPointRepository DataPointRepository;
         private static readonly DutyCycleRepository DutyCycleRepository;
+        private static readonly AlertRepository AlertRepository;
 
         static Functions()
         {
-
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
                 CloudConfigurationManager.GetSetting("IoTStorageConnectionString"));
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
@@ -31,8 +31,8 @@ namespace CodingMonkey.SumpPumpMonitor.WebJobs
             //DataPointTable = tableClient.GetTableReference("SumpPumpMonitorData");
             string tableStorageConnectionString = storageAccount.ToString(true);
             DataPointRepository = new DataPointRepository(tableStorageConnectionString);
-
             DutyCycleRepository = new DutyCycleRepository(tableStorageConnectionString);
+            AlertRepository = new AlertRepository(tableStorageConnectionString);
         }
 
         public async static Task ProcessSumpPumpDataPoint([EventHubTrigger("iothub-ehub-sumppump-i-31562-57e63b098f")] DataPointPayload payload)
@@ -63,7 +63,15 @@ namespace CodingMonkey.SumpPumpMonitor.WebJobs
 
         public async static Task ProcessAlertMessage([ServiceBusTrigger("sumppumpalerts")] AlertPayload payload)
         {
-
+            var newAlert = new AlertEntity()
+            {
+                PartitionKey = payload.DeviceId,
+                RowKey = payload.Timestamp.ToRowKey(),
+                Type = (AlertType)payload.Type,
+                WaterLevel = payload.WaterLevel,
+                PumpRunning = payload.PumpRunning
+            };
+            AlertRepository.Insert(newAlert);
         }
 
         private async static Task<DutyCycleEntity> GetCurrentDutyCycle(DataPointPayload payload)

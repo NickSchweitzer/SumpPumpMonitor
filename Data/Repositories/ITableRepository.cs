@@ -8,6 +8,7 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Repositories
     public interface ITableRepository<T>
         where T : TableEntity, new()
     {
+        Task<bool> CreateTable(); 
         Task<IEnumerable<T>> All(string partitionKey = null);
         Task<IEnumerable<T>> Range(string partitionKey, DateTime startTime, DateTime? endTime);
         Task<IEnumerable<T>> Top(string partitionKey, int top);

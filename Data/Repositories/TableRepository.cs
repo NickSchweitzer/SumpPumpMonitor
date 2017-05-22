@@ -21,6 +21,11 @@ namespace CodingMonkeyNet.SumpPumpMonitor.Data.Repositories
             StorageTable = tableClient.GetTableReference(tableName);
         }
 
+        public async Task<bool> CreateTable()
+        {
+            return await StorageTable.CreateIfNotExistsAsync();
+        }
+
         protected async Task<IEnumerable<T>> ExecuteQuery(TableQuery<T> query)
         {
             TableQuerySegment<T> segment = null;
